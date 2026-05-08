@@ -6,6 +6,14 @@ const KAKAO_KEY  = '6dc88714f7ade5205b72b9a2a991d530';
 const GOOGLE_CID = '372085184739-6vp986ob9sa277cvcdfeill8se8i9hpg.apps.googleusercontent.com';
 const MON = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
+/* ── 현재 디렉토리 기준 base path ── */
+function getBasePath() {
+  var path = location.pathname;
+  /* login.html, index.html 등 파일명 제거 → 디렉토리만 */
+  var base = path.substring(0, path.lastIndexOf('/') + 1);
+  return location.origin + base;
+}
+
 /* ── 전역 상태 ── */
 let allRaces    = [];
 let currentUser = null;
@@ -109,7 +117,7 @@ function loginGoogle() {
 function skipLogin() {
   localStorage.setItem('runnu_skip', '1');
   localStorage.removeItem('runnu_user');
-  window.location.href = 'index.html';
+  window.location.href = getBasePath() + 'index.html';
 }
 
 /* ════════════════════════════════
@@ -120,7 +128,7 @@ function afterLogin(user) {
   localStorage.setItem('runnu_user', JSON.stringify(user));
   localStorage.removeItem('runnu_skip');
   wishlist = JSON.parse(localStorage.getItem('runnu_wish_' + (user.email || 'guest')) || '[]');
-  window.location.href = 'index.html';
+  window.location.href = getBasePath() + 'index.html';
 }
 
 function doLogout() {
@@ -132,7 +140,7 @@ function doLogout() {
   localStorage.removeItem('runnu_user');
   localStorage.removeItem('runnu_skip');
   wishlist = [];
-  window.location.href = 'login.html';
+  window.location.href = getBasePath() + 'login.html';
 }
 
 /* ════════════════════════════════
@@ -263,7 +271,7 @@ function render(list) {
 function toggleWish(raceTitle) {
   if (!currentUser) {
     if (confirm('찜 기능은 로그인이 필요해요.\n로그인 화면으로 이동할까요?'))
-      window.location.href = 'login.html';
+      window.location.href = getBasePath() + 'login.html';
     return false;
   }
   var idx = wishlist.indexOf(raceTitle);
