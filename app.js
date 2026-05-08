@@ -137,7 +137,7 @@ async function loadRaces() {
     const res  = await fetch('races.json?t=' + Date.now());
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    allRaces   = data.races || [];
+    allRaces   = (data.races || []).sort((a, b) => new Date(a.date) - new Date(b.date));
     const banner = document.getElementById('updateTime');
     if (banner) banner.textContent = data.updated_at
       ? '마지막 업데이트: ' + data.updated_at + ' · 매주 월요일 자동 갱신'
