@@ -6,17 +6,15 @@
 <title>런뉴 — 대회 일정</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* 기본 배경 (PC에서 양옆 빈 공간 색상) */
+  /* 기본 및 모바일 래퍼 설정 */
   body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; }
-  
-  /* 📱 모바일 화면 래퍼 */
   .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100vh; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* ══ 탭 공통 ══ */
-  .tab-content { flex: 1; overflow-y: auto; padding-bottom: 70px; /* 하단 탭바 가림 방지 */ }
+  /* 탭 콘텐츠 공통 */
+  .tab-content { flex: 1; overflow-y: auto; padding-bottom: 80px; /* 하단 탭바 여백 */ }
   .tab-content::-webkit-scrollbar { display: none; }
 
-  /* ══ 1. 대회 목록 탭 스타일 ══ */
+  /* ── 1. 대회 목록 탭 스타일 ── */
   .hero-section { position: relative; height: 260px; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; flex-shrink: 0; }
   .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80') center/cover; filter: brightness(0.4); z-index: 0; }
   .hero-content { position: relative; z-index: 1; }
@@ -28,6 +26,7 @@
   .update-info .dot { color: #8bc34a; font-size: 14px; }
   .content-wrap { padding: 24px; }
 
+  /* 필터 영역 */
   .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .filter-header h3 { font-size: 13px; margin: 0; font-weight: normal; color: #ccc; }
   .btn-reset { background: none; border: none; color: #FFFF00; font-size: 12px; cursor: pointer; font-weight: bold; padding: 0; }
@@ -47,6 +46,7 @@
   .toggle-switch.on { background-color: #8bc34a; }
   .toggle-switch.on::after { left: 22px; background-color: #fff; }
 
+  /* 리스트 영역 */
   .list-header { font-size: 13px; color: #aaa; margin-bottom: 16px; }
   .list-header strong { color: #fff; font-size: 15px; }
 
@@ -72,30 +72,40 @@
   .dday { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #333; color: #aaa; font-weight: bold; }
   .dday.close { background: #222; color: #666; }
 
-  /* ══ 2. 마이페이지 탭 스타일 ══ */
-  .my-header { padding: 40px 24px 30px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #222; background: #151515; }
-  .my-avatar { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; border: 2px solid #333; }
+
+  /* ── 2. 마이페이지 탭 스타일 (카드형 UI 복원!) ── */
+  .my-page-wrap { padding: 30px 20px; }
+  
+  /* 프로필 카드 */
+  .profile-card { background: #1c1c1c; border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 30px; border: 1px solid #2a2a2a; }
+  .my-avatar { width: 68px; height: 68px; border-radius: 50%; overflow: hidden; background: #673ab7; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #fff; flex-shrink: 0; }
   .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .my-avatar-ph { width: 64px; height: 64px; border-radius: 50%; background: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; color: #fff; border: 2px solid #333; }
-  .my-name { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
-  .my-email { font-size: 13px; color: #aaa; margin-bottom: 10px; }
-  .my-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+  .profile-info { flex-grow: 1; overflow: hidden; }
+  .my-name { font-size: 20px; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .my-email { font-size: 13px; color: #aaa; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .my-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
   .my-badge.kakao { background: #FEE500; color: #000; }
   .my-badge.google { background: #fff; color: #333; }
 
-  .my-section { padding: 24px; border-bottom: 1px solid #222; }
-  .my-sec-title { font-size: 13px; color: #aaa; margin-bottom: 16px; font-weight: bold; letter-spacing: 1px; }
-  .my-item { display: flex; align-items: center; padding: 12px 0; color: #fff; text-decoration: none; }
-  .my-item-icon { margin-right: 14px; font-size: 20px; }
-  .my-item-label { flex: 1; font-size: 15px; }
-  .my-item-count { font-weight: bold; color: #FFFF00; margin-right: 10px; font-size: 16px; }
-  .my-item-arrow { color: #666; font-size: 20px; }
+  /* 메뉴 그룹 */
+  .menu-group { margin-bottom: 30px; }
+  .menu-title { font-size: 13px; color: #aaa; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; padding-left: 4px; }
   
-  .logout-row { display: flex; align-items: center; padding: 12px 0; color: #ff4b2b; cursor: pointer; font-size: 15px; }
-  .logout-row svg { margin-right: 14px; }
+  /* 메뉴 카드 아이템 */
+  .menu-item { display: flex; align-items: center; background: #1c1c1c; border-radius: 16px; padding: 18px 20px; text-decoration: none; color: #fff; margin-bottom: 10px; border: 1px solid #2a2a2a; transition: background 0.2s; }
+  .menu-item:active { background: #222; }
+  .menu-icon { font-size: 22px; margin-right: 16px; }
+  .menu-label { flex: 1; font-size: 15px; font-weight: bold; }
+  .menu-count { font-size: 18px; font-weight: bold; color: #FFFF00; margin-right: 12px; }
+  .menu-arrow { color: #666; font-size: 20px; font-weight: 300; }
+  
+  /* 로그아웃 버튼 전용 */
+  .logout-item { justify-content: center; color: #ff4b2b; cursor: pointer; }
+  .logout-item .menu-label { flex: none; font-size: 15px; font-weight: bold; margin-left: 10px; }
+  .logout-item svg { width: 20px; height: 20px; stroke: #ff4b2b; }
 
-  /* ══ 3. 하단 탭바 ══ */
-  .tab-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60px; background-color: #121212; display: flex; border-top: 1px solid #222; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+  /* ── 3. 하단 탭바 ── */
+  .tab-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 64px; background-color: #121212; display: flex; border-top: 1px solid #222; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
   .tab-btn { flex: 1; background: none; border: none; color: #666; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; font-weight: bold; transition: color 0.2s; }
   .tab-btn.active { color: #FFFF00; }
   .tab-btn svg { width: 22px; height: 22px; }
@@ -162,35 +172,39 @@
     </div>
 
     <div id="tabMy" class="tab-content" style="display:none;flex-direction:column;">
-      <div class="my-header">
-        <div id="myAvatarWrap"></div>
-        <div>
-          <div class="my-name" id="myName">–</div>
-          <div class="my-email" id="myEmail">–</div>
-          <div class="my-badge" id="myBadge"></div>
+      <div class="my-page-wrap">
+        
+        <div class="profile-card">
+          <div id="myAvatarWrap"></div>
+          <div class="profile-info">
+            <div class="my-name" id="myName">–</div>
+            <div class="my-email" id="myEmail">–</div>
+            <div class="my-badge" id="myBadge"></div>
+          </div>
         </div>
-      </div>
 
-      <div class="my-section">
-        <div class="my-sec-title">내 활동</div>
-        <a class="my-item" href="wishlist.html">
-          <div class="my-item-icon">❤️</div>
-          <div class="my-item-label">찜한 대회</div>
-          <span class="my-item-count" id="wishCount">0</span>
-          <div class="my-item-arrow">›</div>
-        </a>
-      </div>
-
-      <div class="my-section">
-        <div class="my-sec-title">계정</div>
-        <div class="logout-row" onclick="doLogout()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          로그아웃
+        <div class="menu-group">
+          <div class="menu-title">내 활동</div>
+          <a class="menu-item" href="wishlist.html">
+            <div class="menu-icon">❤️</div>
+            <div class="menu-label">찜한 대회</div>
+            <div class="menu-count" id="wishCount">0</div>
+            <div class="menu-arrow">›</div>
+          </a>
         </div>
+
+        <div class="menu-group">
+          <div class="menu-title">계정</div>
+          <div class="menu-item logout-item" onclick="doLogout()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <div class="menu-label">로그아웃</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -215,7 +229,7 @@
 
   </div> <script src="app.js"></script>
 <script>
-  /* ── 탭 전환 로직 ── */
+  /* 탭 전환 */
   function showTab(tab) {
     document.getElementById('tabList').style.display = tab === 'list' ? 'flex' : 'none';
     document.getElementById('tabMy').style.display   = tab === 'my'   ? 'flex' : 'none';
@@ -223,54 +237,42 @@
     document.getElementById('btn-my').classList.toggle('active',   tab === 'my');
   }
 
-  /* ── 마이페이지 렌더링 로직 ── */
+  /* 마이페이지 정보 세팅 */
   function renderMy() {
     if (!currentUser) return;
+    
     document.getElementById('myName').textContent  = currentUser.name || '유저';
     document.getElementById('myEmail').textContent = currentUser.email || '이메일 없음';
 
     const wrap = document.getElementById('myAvatarWrap');
     wrap.innerHTML = currentUser.photo
       ? `<div class="my-avatar"><img src="${currentUser.photo}" alt="프로필"></div>`
-      : `<div class="my-avatar-ph">${(currentUser.name || 'U')[0]}</div>`;
+      : `<div class="my-avatar">${(currentUser.name || 'U')[0]}</div>`; // 사진 없을 시 보라색 배경에 첫글자
 
     const badge = document.getElementById('myBadge');
     badge.className = 'my-badge ' + (currentUser.provider === 'kakao' ? 'kakao' : 'google');
     badge.textContent = currentUser.provider === 'kakao' ? '카카오 로그인' : 'Google 로그인';
 
-    // app.js에 getWishCount() 함수가 구현되어 있다고 가정
     if(typeof getWishCount === 'function') {
       document.getElementById('wishCount').textContent = getWishCount();
     }
   }
 
-  /* ── 페이지 초기화 및 로그인 확인 ── */
+  /* 시작 로직 */
   (async () => {
-    // 1. 로그인 상태 확인 (app.js의 함수 호출)
     const loggedIn = restoreSession();
-
     if (!loggedIn) {
-      // 2. 로그인 안 되어 있으면 무조건 로그인 창으로 보냄
       window.location.href = getBasePath() + 'login.html';
     } else {
-      // 3. 로그인 된 유저면 마이 탭(버튼) 보이게 하고 정보 렌더링
       document.getElementById('btn-my').style.display = 'flex';
       renderMy();
 
-      // 4. 대회 목록 데이터 로드 (app.js 함수)
       const races = await loadRaces();
       if (!races || races.length === 0) {
-        document.getElementById('raceList').innerHTML = `
-          <div style="text-align:center; padding: 40px; color: #666;">
-            <div style="font-size:36px; margin-bottom:10px;">⚠️</div>
-            대회 정보를 불러오지 못했어요.<br>데이터를 확인해주세요.
-          </div>`;
+        document.getElementById('raceList').innerHTML = `<div style="text-align:center; padding:40px; color:#666;">대회 데이터가 없습니다.</div>`;
       } else {
-        if(typeof applyFilter === 'function') {
-           applyFilter(); // 초기 데이터 화면에 그리기
-        } else if(typeof render === 'function') {
-           render(races);
-        }
+        if(typeof applyFilter === 'function') applyFilter(); 
+        else if(typeof render === 'function') render(races);
       }
     }
   })();
