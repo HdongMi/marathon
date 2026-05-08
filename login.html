@@ -104,9 +104,9 @@
 
 <script src="app.js"></script>
 <script>
-  /* 이미 로그인/스킵 상태면 바로 목록으로 */
+  /* 실제 로그인 상태일 때만 목록으로 (스킵은 로그인 아님) */
   var session = restoreSession();
-  if (session) window.location.href = 'index.html';
+  if (session === 'user') window.location.href = getBasePath() + 'index.html';
 
   /* 카카오 초기화 */
   initKakao();
