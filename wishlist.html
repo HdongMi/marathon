@@ -6,19 +6,24 @@
 <title>런뉴 — 찜한 대회</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; }
-  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; min-height: 100vh; position: relative; color: #fff; display: flex; flex-direction: column; overflow-x: hidden; }
+  /* 📱 전체 화면 및 모바일 래퍼 통일 (index.html과 동일) */
+  * { box-sizing: border-box; }
+  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100%; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* 헤더 스타일 */
-  .sub-header { display: flex; align-items: center; padding: 20px 24px; background-color: #151515; border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 10; }
+  /* 헤더 스타일 (고정) */
+  .sub-header { display: flex; align-items: center; padding: 20px 24px; background-color: #151515; border-bottom: 1px solid #222; flex-shrink: 0; z-index: 10; }
   .btn-back { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 0; margin-right: 16px; line-height: 1; }
   .sub-title { font-size: 18px; font-weight: bold; margin: 0; }
 
-  .content-wrap { padding: 24px; flex-grow: 1; }
+  /* 리스트 영역 (이 안에서만 스크롤) */
+  .content-wrap { width: 100%; flex: 1; overflow-y: auto; padding: 24px; padding-bottom: 40px; }
+  .content-wrap::-webkit-scrollbar { display: none; }
+  
   .list-header { font-size: 13px; color: #aaa; margin-bottom: 16px; }
   .list-header strong { color: #FFFF00; font-size: 15px; }
 
-  /* app.js의 render() 함수가 그릴 카드 스타일 보장 */
+  /* 카드 공통 스타일 */
   #raceList { display: flex; flex-direction: column; gap: 12px; }
   .race-card { background-color: #1c1c1c; border-radius: 16px; padding: 16px; display: flex; align-items: center; text-decoration: none; border: 1px solid #2a2a2a; color: #fff; }
   .date-box { background-color: #2a2a2a; border-radius: 12px; width: 64px; height: 64px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-right: 16px; flex-shrink: 0; }
@@ -37,10 +42,11 @@
   
   .card-title { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card-meta { font-size: 12px; color: #888; }
-  .card-right { margin-left: 10px; }
+  .card-right { margin-left: 10px; flex-shrink: 0; }
   .dday { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #333; color: #aaa; font-weight: bold; }
   .dday.close { background: #222; color: #666; }
   
+  /* 비어있을 때 스타일 */
   .empty-state { text-align: center; padding: 60px 20px; color: #888; }
   .empty-state .icon { font-size: 40px; margin-bottom: 16px; }
   .empty-state p { margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; }
@@ -71,22 +77,17 @@
 <script src="app.js"></script>
 <script>
   (async () => {
-    // 로그인 체크
     if (!restoreSession()) {
       window.location.href = getBasePath() + 'login.html';
       return;
     }
 
-    // 데이터 로드
     await loadRaces();
 
-    // 전체 대회 중 찜(wishlist 배열)에 들어있는 대회만 필터링
-    // app.js에 전역변수 wishlist 가 있다고 가정합니다.
     const myWishes = allRaces.filter(function(r) {
       return wishlist.includes(r.title); 
     });
 
-    // 찜한 대회가 없을 때의 화면
     if (myWishes.length === 0) {
       document.getElementById('raceCount').textContent = '0';
       document.getElementById('raceList').innerHTML = `
@@ -97,7 +98,6 @@
         </div>
       `;
     } else {
-      // 찜한 대회가 있으면 app.js의 렌더링 함수 사용
       if(typeof render === 'function') {
         render(myWishes);
       }
