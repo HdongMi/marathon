@@ -20,7 +20,6 @@
     --accent2: #ff4d2e;
     --accent3: #00c9a7;
     --radius: 16px;
-    --tab-h: 60px;
   }
 
   html, body {
@@ -36,332 +35,300 @@
     width: 390px;
     min-height: 100vh;
     background: var(--bg);
-    position: relative;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
-
-  .status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 20px 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    flex-shrink: 0;
-  }
-  .status-icons { display: flex; gap: 6px; align-items: center; font-size: 12px; }
 
   .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
   .screen.active { display: flex; }
 
-  .tab-bar {
-    display: flex;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    height: var(--tab-h);
-    flex-shrink: 0;
-  }
-  .tab-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    border: none;
-    background: none;
-    color: var(--text-muted);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 10px;
-    cursor: pointer;
-    transition: color .2s;
-  }
-  .tab-btn.active { color: var(--accent); }
-  .tab-btn svg { width: 22px; height: 22px; }
-
-  /* ── 목록 ── */
+  /* ── 히어로 ── */
   .list-hero {
     position: relative; height: 200px; overflow: hidden; flex-shrink: 0;
   }
-  .list-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.55); }
+  .list-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.5); }
   .list-hero-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 30%, var(--bg) 100%);
+    background: linear-gradient(to bottom, transparent 20%, var(--bg) 100%);
   }
   .list-hero-content { position: absolute; bottom: 20px; left: 20px; right: 20px; }
   .list-hero-content h1 {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 38px; letter-spacing: 2px; color: #fff; line-height: 1;
+    font-size: 40px; letter-spacing: 2px; color: #fff; line-height: 1;
   }
   .list-hero-content h1 span { color: var(--accent); }
   .hero-sub {
-    font-size: 11px; color: rgba(255,255,255,.6); margin-top: 4px;
+    font-size: 11px; color: rgba(255,255,255,.55); margin-top: 4px;
     font-weight: 300; letter-spacing: 1px; text-transform: uppercase;
   }
 
-  /* 업데이트 배너 */
+  /* ── 업데이트 배너 ── */
   .update-banner {
     display: flex; align-items: center; gap: 6px;
     padding: 8px 16px;
-    background: rgba(232,240,0,.06);
-    border-bottom: 1px solid rgba(232,240,0,.1);
-    font-size: 11px; color: var(--text-muted);
+    background: rgba(232,240,0,.05);
+    border-bottom: 1px solid rgba(232,240,0,.08);
+    font-size: 11px; color: var(--text-muted); flex-shrink: 0;
+  }
+  .update-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── 코스 필터 ── */
+  .filter-section {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
     flex-shrink: 0;
   }
-  .update-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
-
-  .filter-row {
-    display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; flex-shrink: 0;
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
-  .chip {
-    flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
-    font-size: 12px; font-weight: 500;
-    border: 1px solid var(--border); background: var(--surface2);
-    color: var(--text-muted); cursor: pointer; transition: all .2s;
-  }
-  .chip.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
-
-  .sort-row {
+  .filter-top {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 4px 16px 10px; flex-shrink: 0;
+    margin-bottom: 12px;
   }
-  .sort-label { font-size: 12px; color: var(--text-muted); }
-  .sort-label strong { color: var(--text); }
+  .filter-title {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.2px;
+  }
+  .filter-reset {
+    font-size: 11px; color: var(--accent); font-weight: 600;
+    cursor: pointer; background: none; border: none;
+    font-family: 'Noto Sans KR', sans-serif; padding: 0;
+  }
 
-  .race-list { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  /* 4칸 체크박스 */
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .c-check { display: contents; }
+  .c-check input[type=checkbox] { display: none; }
+  .c-box {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 10px 6px; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer; transition: all .18s; user-select: none;
+  }
+  .c-check input:checked + .c-box {
+    border-color: var(--accent);
+    background: rgba(232,240,0,.1);
+  }
+  .c-icon { font-size: 20px; line-height: 1; }
+  .c-name {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    letter-spacing: .3px; transition: color .18s;
+  }
+  .c-check input:checked + .c-box .c-name { color: var(--accent); }
+
+  /* 접수중 토글 */
+  .open-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .open-toggle-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .tog {
+    width: 42px; height: 24px; border-radius: 12px;
+    background: var(--surface2); border: 1.5px solid var(--border);
+    position: relative; cursor: pointer; transition: all .2s; flex-shrink: 0;
+  }
+  .tog.on { background: var(--accent); border-color: var(--accent); }
+  .tog-knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--text-muted); transition: all .2s;
+  }
+  .tog.on .tog-knob { left: 20px; background: #000; }
+
+  /* 카운트 */
+  .count-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px 8px; flex-shrink: 0;
+  }
+  .count-label { font-size: 12px; color: var(--text-muted); }
+  .count-label strong { color: var(--text); }
+
+  /* 목록 스크롤 */
+  .race-list { flex: 1; overflow-y: auto; padding: 0 16px 20px; }
   .race-list::-webkit-scrollbar { display: none; }
 
-  /* 로딩 */
-  .loading-state {
+  /* 빈 상태 / 로딩 */
+  .state-box {
     display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 60px 20px; gap: 16px;
+    justify-content: center; padding: 60px 20px; gap: 12px; text-align: center;
   }
   .spinner {
-    width: 40px; height: 40px; border: 3px solid var(--surface2);
+    width: 38px; height: 38px; border: 3px solid var(--surface2);
     border-top-color: var(--accent); border-radius: 50%;
     animation: spin .8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 13px; color: var(--text-muted); }
-
-  /* 에러 */
-  .error-state {
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 60px 20px; gap: 12px; text-align: center;
-  }
-  .error-icon { font-size: 40px; }
-  .error-text { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .state-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
   .retry-btn {
-    margin-top: 8px; padding: 10px 24px; border-radius: 10px;
+    padding: 10px 24px; border-radius: 10px;
     background: var(--accent); color: #000; font-weight: 700;
     border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 13px;
   }
 
-  /* 카드 */
+  /* ── 대회 카드 ── */
   .race-card {
     display: flex; gap: 12px; padding: 14px;
     background: var(--surface); border-radius: var(--radius);
     margin-bottom: 10px; border: 1px solid var(--border);
-    cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+    cursor: pointer; transition: transform .15s;
+    position: relative; overflow: hidden;
   }
   .race-card::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    content:''; position: absolute; left:0; top:0; bottom:0;
     width: 3px; background: var(--accent); border-radius: 3px 0 0 3px;
-    opacity: 0; transition: opacity .2s;
+    opacity: 0; transition: opacity .15s;
   }
   .race-card:active { transform: scale(.98); }
   .race-card:active::before { opacity: 1; }
 
-  .race-date-box {
-    flex-shrink: 0; width: 48px; text-align: center;
+  .date-box {
+    flex-shrink: 0; width: 50px; text-align: center;
     background: var(--surface2); border-radius: 10px; padding: 8px 4px;
     border: 1px solid var(--border);
   }
-  .race-date-box .month { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-  .race-date-box .day { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800; color: var(--text); line-height: 1; }
-  .race-date-box .dow { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .date-box .mo { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+  .date-box .dy { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+  .date-box .dw { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-  .race-info { flex: 1; min-width: 0; }
-  .race-badges { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
-  .badge {
+  .card-info { flex: 1; min-width: 0; }
+  .badges { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+  .b {
     font-size: 10px; font-weight: 700; padding: 2px 7px;
     border-radius: 4px; letter-spacing: .5px;
   }
-  .badge-full { background: rgba(232,240,0,.15); color: var(--accent); border: 1px solid rgba(232,240,0,.3); }
-  .badge-half { background: rgba(0,201,167,.15); color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
-  .badge-10k { background: rgba(255,77,46,.15); color: var(--accent2); border: 1px solid rgba(255,77,46,.3); }
-  .badge-trail { background: rgba(120,100,255,.15); color: #a88fff; border: 1px solid rgba(120,100,255,.3); }
-  .badge-5k { background: rgba(0,180,255,.15); color: #00b4ff; border: 1px solid rgba(0,180,255,.3); }
-  .badge-ultra { background: rgba(255,160,0,.15); color: #ffa500; border: 1px solid rgba(255,160,0,.3); }
+  .b-full  { background: rgba(232,240,0,.15); color: var(--accent);  border: 1px solid rgba(232,240,0,.3); }
+  .b-half  { background: rgba(0,201,167,.15);  color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
+  .b-10k   { background: rgba(255,77,46,.15);   color: var(--accent2); border: 1px solid rgba(255,77,46,.3); }
+  .b-5k    { background: rgba(0,180,255,.15);   color: #00b4ff;        border: 1px solid rgba(0,180,255,.3); }
+  .b-ultra { background: rgba(255,160,0,.15);   color: #ffa500;        border: 1px solid rgba(255,160,0,.3); }
+  .b-trail { background: rgba(120,100,255,.15); color: #a88fff;        border: 1px solid rgba(120,100,255,.3); }
 
-  .race-title {
+  .card-title {
     font-size: 14px; font-weight: 700; color: var(--text);
     margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .race-meta { display: flex; gap: 8px; font-size: 11px; color: var(--text-muted); align-items: center; flex-wrap: wrap; }
+  .card-meta { font-size: 11px; color: var(--text-muted); }
 
-  .race-right {
-    flex-shrink: 0; display: flex; flex-direction: column;
-    align-items: flex-end; justify-content: space-between;
+  .card-right {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: flex-end;
   }
-  .d-day {
+  .dday {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; padding: 4px 9px; border-radius: 6px;
   }
-  .d-day.open { background: rgba(232,240,0,.15); color: var(--accent); }
-  .d-day.close { background: var(--surface2); color: var(--text-muted); }
-  .d-day.soon { background: rgba(255,77,46,.15); color: var(--accent2); }
-  .d-day.before { background: rgba(0,180,255,.1); color: #00b4ff; }
+  .dday.open   { background: rgba(232,240,0,.15);  color: var(--accent); }
+  .dday.close  { background: var(--surface2);       color: var(--text-muted); }
+  .dday.soon   { background: rgba(255,77,46,.15);   color: var(--accent2); }
+  .dday.before { background: rgba(0,180,255,.1);    color: #00b4ff; }
 
-  /* ── 상세 ── */
+  /* ── 상세 화면 ── */
   #screen-detail { background: var(--bg); }
-  .detail-scroll { flex: 1; overflow-y: auto; }
-  .detail-scroll::-webkit-scrollbar { display: none; }
+  .d-scroll { flex: 1; overflow-y: auto; }
+  .d-scroll::-webkit-scrollbar { display: none; }
 
-  .detail-hero { position: relative; height: 240px; overflow: hidden; }
-  .detail-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.6); }
-  .detail-hero-overlay {
+  .d-hero { position: relative; height: 240px; overflow: hidden; }
+  .d-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.55); }
+  .d-hero-grad {
     position: absolute; inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, var(--bg) 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,.25) 0%, var(--bg) 100%);
   }
-  .detail-back {
+  .d-back {
     position: absolute; top: 16px; left: 16px;
-    width: 36px; height: 36px; background: rgba(0,0,0,.5);
+    width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(10px);
   }
-  .detail-wishlist {
+  .d-wish {
     position: absolute; top: 16px; right: 16px;
-    width: 36px; height: 36px; background: rgba(0,0,0,.5);
+    width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(10px);
   }
-  .detail-hero-content { position: absolute; bottom: 20px; left: 20px; right: 20px; }
-  .detail-hero-content h2 {
+  .d-hero-txt { position: absolute; bottom: 20px; left: 20px; right: 70px; }
+  .d-hero-txt h2 {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 1px; line-height: 1.1;
-    text-shadow: 0 2px 12px rgba(0,0,0,.5);
+    font-size: 26px; font-weight: 800; color: #fff;
+    line-height: 1.15; text-shadow: 0 2px 12px rgba(0,0,0,.6);
   }
 
-  .detail-body { padding: 20px; }
+  .d-body { padding: 20px; }
 
-  .course-badges-lg { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-  .course-badge-lg {
-    padding: 8px 16px; border-radius: 10px;
+  .d-courses { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .dc {
+    padding: 7px 14px; border-radius: 10px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px; font-weight: 700; letter-spacing: 1px;
+    font-size: 15px; font-weight: 700; letter-spacing: 1px;
   }
-  .course-badge-lg.full { background: rgba(232,240,0,.15); color: var(--accent); border: 1px solid rgba(232,240,0,.3); }
-  .course-badge-lg.half { background: rgba(0,201,167,.15); color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
-  .course-badge-lg.trail { background: rgba(120,100,255,.15); color: #a88fff; border: 1px solid rgba(120,100,255,.3); }
-  .course-badge-lg.short { background: rgba(0,180,255,.15); color: #00b4ff; border: 1px solid rgba(0,180,255,.3); }
+  .dc-full  { background: rgba(232,240,0,.15); color: var(--accent);  border: 1px solid rgba(232,240,0,.3); }
+  .dc-half  { background: rgba(0,201,167,.15);  color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
+  .dc-trail { background: rgba(120,100,255,.15);color: #a88fff;        border: 1px solid rgba(120,100,255,.3); }
+  .dc-short { background: rgba(0,180,255,.15);  color: #00b4ff;        border: 1px solid rgba(0,180,255,.3); }
+  .dc-ultra { background: rgba(255,160,0,.15);  color: #ffa500;        border: 1px solid rgba(255,160,0,.3); }
 
   .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-  .info-item {
+  .info-box {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; padding: 14px;
   }
-  .info-item .label {
-    font-size: 10px; color: var(--text-muted); font-weight: 500;
-    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
-  }
-  .info-item .value { font-size: 14px; color: var(--text); font-weight: 700; }
-  .info-item .value small { font-size: 11px; font-weight: 400; color: var(--text-muted); }
-  .info-item.accent-border { border-color: rgba(232,240,0,.3); }
+  .info-box.hi { border-color: rgba(232,240,0,.25); }
+  .info-lbl { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 5px; }
+  .info-val { font-size: 13px; color: var(--text); font-weight: 700; line-height: 1.4; }
 
-  .section { margin-bottom: 24px; }
-  .section-title {
-    font-size: 13px; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+  .d-section { margin-bottom: 22px; }
+  .d-sec-title {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
     display: flex; align-items: center; gap: 8px;
   }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .d-sec-title::after { content:''; flex:1; height:1px; background: var(--border); }
 
-  .contact-row {
+  .link-row {
     display: flex; align-items: center; gap: 10px; padding: 12px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; margin-bottom: 8px; text-decoration: none;
-    cursor: pointer;
+    border-radius: 10px; cursor: pointer; transition: border-color .2s;
   }
-  .contact-icon {
+  .link-row:active { border-color: var(--accent); }
+  .link-icon {
     width: 32px; height: 32px; border-radius: 8px; background: var(--surface2);
-    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0;
   }
-  .contact-text { font-size: 13px; color: var(--text); font-weight: 500; }
+  .link-text { font-size: 13px; color: var(--text); font-weight: 500; }
 
-  .reg-period-box {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px;
-  }
-  .reg-period-row { display: flex; justify-content: space-between; align-items: center; }
-  .reg-period-label { font-size: 12px; color: var(--text-muted); }
-  .reg-period-value { font-size: 13px; color: var(--text); font-weight: 600; }
-
+  /* CTA */
   .cta-bar {
-    position: sticky; bottom: 0; padding: 12px 20px 24px;
-    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    padding: 10px 20px 30px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
     display: flex; gap: 10px; flex-shrink: 0;
   }
   .cta-share {
-    width: 48px; height: 48px; border-radius: 12px;
+    width: 50px; height: 50px; border-radius: 14px;
     border: 1px solid var(--border); background: var(--surface);
-    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
-  .cta-register {
-    flex: 1; height: 48px; border-radius: 12px; background: var(--accent);
-    border: none; font-family: 'Noto Sans KR', sans-serif;
-    font-size: 15px; font-weight: 700; color: #000; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px; transition: all .2s;
+  .cta-reg {
+    flex: 1; height: 50px; border-radius: 14px;
+    background: var(--accent); border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px; font-weight: 700; color: #000;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .15s;
   }
-  .cta-register.closed { background: var(--surface2); color: var(--text-muted); }
-  .cta-register:active { transform: scale(.97); }
-
-  /* ── 마이 ── */
-  #screen-my { background: var(--bg); }
-  .my-scroll { flex: 1; overflow-y: auto; }
-  .my-scroll::-webkit-scrollbar { display: none; }
-  .my-profile { padding: 24px 20px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
-  .avatar {
-    width: 64px; height: 64px; border-radius: 20px;
-    background: linear-gradient(135deg, var(--accent), var(--accent3));
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #000; flex-shrink: 0;
-  }
-  .profile-info .name { font-size: 18px; font-weight: 700; color: var(--text); }
-  .profile-info .email { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .profile-info .level {
-    display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;
-    background: rgba(232,240,0,.15); border: 1px solid rgba(232,240,0,.3);
-    padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; color: var(--accent);
-  }
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 20px 20px; flex-shrink: 0; }
-  .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; }
-  .stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
-  .stat-unit { font-size: 12px; color: var(--accent); font-weight: 700; }
-  .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-  .my-section { padding: 0 20px 20px; flex-shrink: 0; }
-  .my-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
-  .my-menu-item {
-    display: flex; align-items: center; gap: 12px; padding: 14px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; margin-bottom: 6px; cursor: pointer;
-  }
-  .my-menu-icon {
-    width: 36px; height: 36px; border-radius: 10px; background: var(--surface2);
-    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-  }
-  .my-menu-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
-  .my-menu-arrow { color: var(--text-muted); font-size: 16px; }
+  .cta-reg.closed { background: var(--surface2); color: var(--text-muted); cursor: default; }
+  .cta-reg:not(.closed):active { transform: scale(.97); }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity:0; transform: translateY(14px); }
+    to   { opacity:1; transform: translateY(0); }
   }
   .race-card { animation: fadeUp .3s ease both; }
 
@@ -370,16 +337,10 @@
 </head>
 <body>
 <div id="phone">
-  <div class="status-bar">
-    <span id="clock">9:30</span>
-    <div class="status-icons">
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4" y="2" width="3" height="10" rx="1"/><rect x="8" y="0" width="3" height="12" rx="1"/><rect x="12" y="0" width="3" height="12" rx="1" opacity=".3"/></svg>
-      <span style="font-size:11px;font-weight:700;">87%</span>
-    </div>
-  </div>
 
   <!-- ══ 목록 화면 ══ -->
   <div class="screen active" id="screen-list">
+
     <div class="list-hero">
       <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80" alt="마라톤">
       <div class="list-hero-overlay"></div>
@@ -394,367 +355,284 @@
       <span id="updateTime">데이터 로딩 중...</span>
     </div>
 
-    <div class="filter-row" id="filterRow">
-      <div class="chip active" data-filter="전체">전체</div>
-      <div class="chip" data-filter="서울">서울</div>
-      <div class="chip" data-filter="경기">경기</div>
-      <div class="chip" data-filter="강원">강원</div>
-      <div class="chip" data-filter="충남">충남</div>
-      <div class="chip" data-filter="경남">경남</div>
-      <div class="chip" data-filter="전북">전북</div>
-      <div class="chip" data-filter="부산">부산</div>
-      <div class="chip" data-filter="접수중">접수중만</div>
+    <!-- 코스 필터 -->
+    <div class="filter-section">
+      <div class="filter-top">
+        <span class="filter-title">코스 종류</span>
+        <button class="filter-reset" onclick="resetFilters()">전체 보기</button>
+      </div>
+      <div class="course-grid">
+        <label class="c-check">
+          <input type="checkbox" value="풀" onchange="applyFilter()">
+          <div class="c-box"><span class="c-icon">🏅</span><span class="c-name">풀코스</span></div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="하프" onchange="applyFilter()">
+          <div class="c-box"><span class="c-icon">🥈</span><span class="c-name">하프</span></div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="10km" onchange="applyFilter()">
+          <div class="c-box"><span class="c-icon">🏃</span><span class="c-name">10km</span></div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="5km" onchange="applyFilter()">
+          <div class="c-box"><span class="c-icon">👟</span><span class="c-name">5km</span></div>
+        </label>
+      </div>
+      <div class="open-toggle-row">
+        <span class="open-toggle-label">접수중인 대회만 보기</span>
+        <div class="tog" id="openTog" onclick="toggleOpen()">
+          <div class="tog-knob"></div>
+        </div>
+      </div>
     </div>
 
-    <div class="sort-row">
-      <span class="sort-label">대회 목록 <strong id="raceCount">–</strong>개</span>
+    <div class="count-row">
+      <span class="count-label">총 <strong id="raceCount">–</strong>개 대회</span>
     </div>
 
     <div class="race-list" id="raceList">
-      <div class="loading-state">
+      <div class="state-box">
         <div class="spinner"></div>
-        <div class="loading-text">대회 정보를 불러오는 중...</div>
+        <div class="state-text">대회 정보를 불러오는 중...</div>
       </div>
     </div>
   </div>
 
   <!-- ══ 상세 화면 ══ -->
   <div class="screen" id="screen-detail">
-    <div class="detail-scroll">
-      <div class="detail-hero">
-        <img id="detailImg" src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="">
-        <div class="detail-hero-overlay"></div>
-        <div class="detail-back" onclick="showList()">
+    <div class="d-scroll">
+      <div class="d-hero">
+        <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="" id="dImg">
+        <div class="d-hero-grad"></div>
+        <div class="d-back" onclick="showList()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
         </div>
-        <div class="detail-wishlist" id="wishBtn" onclick="toggleWish()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" id="wishIcon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <div class="d-wish" onclick="toggleWish()">
+          <svg id="wishIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </div>
-        <div class="detail-hero-content">
-          <h2 id="detailTitle"></h2>
+        <div class="d-hero-txt">
+          <h2 id="dTitle"></h2>
         </div>
       </div>
 
-      <div class="detail-body">
-        <div class="course-badges-lg" id="detailCourses"></div>
+      <div class="d-body">
+        <div class="d-courses" id="dCourses"></div>
 
         <div class="info-grid">
-          <div class="info-item">
-            <div class="label">📍 장소</div>
-            <div class="value" id="detailLocation">–</div>
+          <div class="info-box">
+            <div class="info-lbl">📍 장소</div>
+            <div class="info-val" id="dLocation">–</div>
           </div>
-          <div class="info-item accent-border">
-            <div class="label">📅 대회일</div>
-            <div class="value" id="detailDate">–</div>
+          <div class="info-box hi">
+            <div class="info-lbl">📅 대회일</div>
+            <div class="info-val" id="dDate">–</div>
           </div>
-          <div class="info-item">
-            <div class="label">📋 접수 기간</div>
-            <div class="value" id="detailReg" style="font-size:11px;">–</div>
+          <div class="info-box">
+            <div class="info-lbl">📋 접수 기간</div>
+            <div class="info-val" id="dReg" style="font-size:11px;line-height:1.6;">–</div>
           </div>
-          <div class="info-item">
-            <div class="label">🏁 접수 상태</div>
-            <div class="value" id="detailStatus">–</div>
+          <div class="info-box">
+            <div class="info-lbl">🏁 접수 상태</div>
+            <div class="info-val" id="dStatus">–</div>
           </div>
         </div>
 
-        <div class="section">
-          <div class="section-title">공식 링크</div>
-          <div class="contact-row" id="detailLink" onclick="openDetailUrl()">
-            <div class="contact-icon">🌐</div>
-            <div class="contact-text" id="detailLinkText">marathongo.co.kr</div>
+        <div class="d-section">
+          <div class="d-sec-title">공식 링크</div>
+          <div class="link-row" onclick="openUrl()">
+            <div class="link-icon">🌐</div>
+            <div class="link-text" id="dLink">marathongo.co.kr</div>
           </div>
         </div>
       </div>
-      <div style="height:80px;"></div>
+      <div style="height:90px;"></div>
     </div>
+
     <div class="cta-bar">
       <div class="cta-share" onclick="shareRace()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </div>
-      <button class="cta-register" id="ctaBtn" onclick="openDetailUrl()">
+      <button class="cta-reg" id="ctaBtn" onclick="openUrl()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         대회 신청하기
       </button>
     </div>
   </div>
 
-  <!-- ══ 마이 화면 ══ -->
-  <div class="screen" id="screen-my">
-    <div class="my-scroll">
-      <div class="my-profile">
-        <div class="avatar">RK</div>
-        <div class="profile-info">
-          <div class="name">런뉴 러너</div>
-          <div class="email">runner@runnu.kr</div>
-          <div class="level">⚡ 마라토너 Lv.4</div>
-        </div>
-      </div>
-      <div class="stats-row">
-        <div class="stat-box">
-          <div class="stat-num">23<span class="stat-unit">회</span></div>
-          <div class="stat-label">완주 대회</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">847<span class="stat-unit">km</span></div>
-          <div class="stat-label">누적 거리</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-num">3<span class="stat-unit">h</span></div>
-          <div class="stat-label">베스트 기록</div>
-        </div>
-      </div>
-      <div class="my-section">
-        <div class="my-section-title">내 대회</div>
-        <div class="my-menu-item"><div class="my-menu-icon">🏃</div><div class="my-menu-label">신청한 대회</div><div class="my-menu-arrow">›</div></div>
-        <div class="my-menu-item"><div class="my-menu-icon">❤️</div><div class="my-menu-label">찜한 대회</div><div class="my-menu-arrow">›</div></div>
-        <div class="my-menu-item"><div class="my-menu-icon">🏆</div><div class="my-menu-label">완주 기록</div><div class="my-menu-arrow">›</div></div>
-      </div>
-      <div class="my-section">
-        <div class="my-section-title">설정</div>
-        <div class="my-menu-item"><div class="my-menu-icon">🔔</div><div class="my-menu-label">알림 설정</div><div class="my-menu-arrow">›</div></div>
-        <div class="my-menu-item"><div class="my-menu-icon">👤</div><div class="my-menu-label">프로필 편집</div><div class="my-menu-arrow">›</div></div>
-        <div class="my-menu-item"><div class="my-menu-icon">⚙️</div><div class="my-menu-label">앱 설정</div><div class="my-menu-arrow">›</div></div>
-      </div>
-      <div style="height:20px;"></div>
-    </div>
-  </div>
-
-  <!-- 탭 바 -->
-  <div class="tab-bar" id="tabBar">
-    <button class="tab-btn active" id="tab-list" onclick="switchTab('list')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      대회목록
-    </button>
-    <button class="tab-btn" id="tab-my" onclick="switchTab('my')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      마이
-    </button>
-  </div>
 </div>
 
 <script>
-  // ── 전역 상태 ──
-  let allRaces = [];
-  let filteredRaces = [];
-  let selectedRace = null;
-  let currentFilter = '전체';
-  let currentTab = 'list';
-  let wished = false;
+  let allRaces = [], selectedRace = null, openOnly = false, wished = false;
+  const MON = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-  // ── 시계 ──
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent =
-      `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-  }
-  updateClock();
-  setInterval(updateClock, 30000);
-
-  // ── races.json 로드 ──
+  /* 데이터 로드 */
   async function loadRaces() {
     try {
-      // 캐시 방지용 타임스탬프
       const res = await fetch(`races.json?t=${Date.now()}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(res.status);
       const data = await res.json();
       allRaces = data.races || [];
-
-      // 업데이트 시간 표시
-      const upd = data.updated_at || '';
       document.getElementById('updateTime').textContent =
-        upd ? `📅 마지막 업데이트: ${upd} (매주 월요일 자동 갱신)` : '데이터 로드 완료';
-
-      applyFilter(currentFilter);
-    } catch (err) {
-      console.error('races.json 로드 실패:', err);
-      showError();
+        data.updated_at
+          ? `마지막 업데이트: ${data.updated_at} · 매주 월요일 자동 갱신`
+          : '데이터 로드 완료';
+      applyFilter();
+    } catch(e) {
+      document.getElementById('raceList').innerHTML = `
+        <div class="state-box">
+          <div style="font-size:36px">⚠️</div>
+          <div class="state-text">대회 정보를 불러오지 못했어요.<br>races.json을 확인해주세요.</div>
+          <button class="retry-btn" onclick="loadRaces()">다시 시도</button>
+        </div>`;
+      document.getElementById('updateTime').textContent = '로드 실패';
     }
   }
 
-  function showError() {
-    document.getElementById('raceList').innerHTML = `
-      <div class="error-state">
-        <div class="error-icon">⚠️</div>
-        <div class="error-text">대회 정보를 불러오지 못했어요.<br>races.json 파일을 확인해주세요.</div>
-        <button class="retry-btn" onclick="loadRaces()">다시 시도</button>
-      </div>`;
-    document.getElementById('raceCount').textContent = '–';
-    document.getElementById('updateTime').textContent = '로드 실패';
-  }
+  /* 필터 */
+  function applyFilter() {
+    const checked = [...document.querySelectorAll('.c-check input:checked')].map(el => el.value);
+    let list = allRaces.slice();
 
-  // ── 필터 ──
-  function applyFilter(filter) {
-    currentFilter = filter;
-    if (filter === '전체') {
-      filteredRaces = [...allRaces];
-    } else if (filter === '접수중만') {
-      filteredRaces = allRaces.filter(r => r.status === '접수중');
-    } else {
-      filteredRaces = allRaces.filter(r => r.region === filter || r.location?.includes(filter));
+    if (checked.length) {
+      list = list.filter(r => {
+        const cs = (r.courses || []).map(c => c.toLowerCase());
+        return checked.some(sel => {
+          if (sel === '풀')   return cs.some(c => c === '풀'  || c.includes('42'));
+          if (sel === '하프') return cs.some(c => c === '하프' || c.includes('21'));
+          if (sel === '10km') return cs.some(c => c.includes('10'));
+          if (sel === '5km')  return cs.some(c => c === '5km' || c === '5k');
+          return false;
+        });
+      });
     }
-    renderList();
+
+    if (openOnly) list = list.filter(r => r.status === '접수중');
+    render(list);
   }
 
-  // ── 렌더링 ──
-  const MONTH_EN = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  function resetFilters() {
+    document.querySelectorAll('.c-check input').forEach(el => el.checked = false);
+    applyFilter();
+  }
 
-  function courseBadge(course) {
+  function toggleOpen() {
+    openOnly = !openOnly;
+    document.getElementById('openTog').classList.toggle('on', openOnly);
+    applyFilter();
+  }
+
+  /* 렌더 */
+  function badge(course) {
     const c = course.toLowerCase();
-    if (c.includes('100') || c.includes('70') || c.includes('50') || c.includes('ultra')) {
-      return `<span class="badge badge-ultra">${course}</span>`;
-    }
-    if (c === '풀' || c.includes('42')) return `<span class="badge badge-full">FULL</span>`;
-    if (c === '하프' || c.includes('21')) return `<span class="badge badge-half">HALF</span>`;
-    if (c.includes('10')) return `<span class="badge badge-10k">10K</span>`;
-    if (c.includes('5')) return `<span class="badge badge-5k">5K</span>`;
-    if (c.toLowerCase().includes('vk') || c.toLowerCase().includes('kids'))
-      return `<span class="badge badge-trail">${course}</span>`;
-    return `<span class="badge badge-trail">${course}</span>`;
+    if (c.includes('100')||c.includes('70')||c.includes('50')) return `<span class="b b-ultra">${course}</span>`;
+    if (c==='풀'||c.includes('42'))   return `<span class="b b-full">FULL</span>`;
+    if (c==='하프'||c.includes('21')) return `<span class="b b-half">HALF</span>`;
+    if (c.includes('10'))             return `<span class="b b-10k">10K</span>`;
+    if (c.includes('5'))              return `<span class="b b-5k">5K</span>`;
+    return `<span class="b b-trail">${course}</span>`;
   }
 
-  function dDayBadge(race) {
-    if (race.status === '마감') return `<div class="d-day close">마감</div>`;
-    if (race.status === '접수전') return `<div class="d-day before">접수전</div>`;
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const raceDate = new Date(race.date);
-    const diff = Math.ceil((raceDate - today) / 86400000);
-    if (diff < 0) return `<div class="d-day close">종료</div>`;
-    if (diff === 0) return `<div class="d-day soon">D-DAY</div>`;
-    if (diff <= 7) return `<div class="d-day soon">D-${diff}</div>`;
-    return `<div class="d-day open">접수중</div>`;
+  function dday(r) {
+    if (r.status==='마감')  return `<div class="dday close">마감</div>`;
+    if (r.status==='접수전') return `<div class="dday before">접수전</div>`;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.ceil((new Date(r.date) - today) / 86400000);
+    if (diff < 0)   return `<div class="dday close">종료</div>`;
+    if (diff === 0)  return `<div class="dday soon">D-DAY</div>`;
+    if (diff <= 7)   return `<div class="dday soon">D-${diff}</div>`;
+    return `<div class="dday open">접수중</div>`;
   }
 
-  function renderList() {
+  function render(list) {
+    document.getElementById('raceCount').textContent = list.length;
     const el = document.getElementById('raceList');
-    document.getElementById('raceCount').textContent = filteredRaces.length;
-
-    if (filteredRaces.length === 0) {
-      el.innerHTML = `<div class="loading-state"><div class="error-icon" style="font-size:40px">🏅</div><div class="loading-text">해당 조건의 대회가 없어요</div></div>`;
+    if (!list.length) {
+      el.innerHTML = `<div class="state-box"><div style="font-size:36px">🏅</div><div class="state-text" style="margin-top:8px">해당 조건의 대회가 없어요</div></div>`;
       return;
     }
-
-    el.innerHTML = filteredRaces.map((race, i) => {
-      const badges = (race.courses || []).slice(0, 3).map(courseBadge).join('');
-      const delay = Math.min(i * 50, 400);
-      return `
-        <div class="race-card" style="animation-delay:${delay}ms" onclick="showDetail(${i})">
-          <div class="race-date-box">
-            <div class="month">${MONTH_EN[race.month] || ''}</div>
-            <div class="day">${race.day}</div>
-            <div class="dow">${race.dow}</div>
-          </div>
-          <div class="race-info">
-            <div class="race-badges">${badges}</div>
-            <div class="race-title">${race.title}</div>
-            <div class="race-meta">
-              <span>📍 ${race.region || ''} ${race.location || ''}</span>
-            </div>
-          </div>
-          <div class="race-right">
-            ${dDayBadge(race)}
-          </div>
-        </div>`;
-    }).join('');
+    el.innerHTML = list.map((r, i) => `
+      <div class="race-card" style="animation-delay:${Math.min(i*45,350)}ms" onclick="showDetail(${allRaces.indexOf(r)})">
+        <div class="date-box">
+          <div class="mo">${MON[r.month]||''}</div>
+          <div class="dy">${r.day}</div>
+          <div class="dw">${r.dow}</div>
+        </div>
+        <div class="card-info">
+          <div class="badges">${(r.courses||[]).slice(0,3).map(badge).join('')}</div>
+          <div class="card-title">${r.title}</div>
+          <div class="card-meta">📍 ${r.region||''} ${r.location||''}</div>
+        </div>
+        <div class="card-right">${dday(r)}</div>
+      </div>`).join('');
   }
 
-  // ── 상세 ──
+  /* 상세 */
   function showDetail(idx) {
-    selectedRace = filteredRaces[idx];
+    selectedRace = allRaces[idx];
     const r = selectedRace;
 
-    document.getElementById('detailTitle').textContent = r.title;
-    document.getElementById('detailLocation').textContent = r.location || r.region || '–';
-    document.getElementById('detailDate').textContent = `${r.date} (${r.dow})`;
-    document.getElementById('detailReg').textContent = r.reg_period || '–';
+    document.getElementById('dTitle').textContent = r.title;
+    document.getElementById('dLocation').textContent = (r.region||'') + ' ' + (r.location||'');
+    document.getElementById('dDate').textContent = r.date + ' (' + r.dow + ')';
+    document.getElementById('dReg').textContent = r.reg_period || '–';
 
-    const statusColors = { '접수중': 'var(--accent)', '마감': 'var(--text-muted)', '접수전': '#00b4ff' };
-    const statusEl = document.getElementById('detailStatus');
-    statusEl.textContent = r.status || '–';
-    statusEl.style.color = statusColors[r.status] || 'var(--text)';
+    const sc = {'접수중':'var(--accent)','마감':'var(--text-muted)','접수전':'#00b4ff','종료':'var(--text-muted)'};
+    const se = document.getElementById('dStatus');
+    se.textContent = r.status || '–';
+    se.style.color = sc[r.status] || 'var(--text)';
 
-    // 코스 배지
-    const coursesEl = document.getElementById('detailCourses');
-    coursesEl.innerHTML = (r.courses || []).map(c => {
+    document.getElementById('dCourses').innerHTML = (r.courses||[]).map(c => {
       const cl = c.toLowerCase();
-      let type = 'short';
-      if (cl === '풀' || cl.includes('42')) type = 'full';
-      else if (cl === '하프' || cl.includes('21')) type = 'half';
-      else if (cl.includes('vk') || cl.includes('kids') || cl.includes('trail')) type = 'trail';
-      return `<span class="course-badge-lg ${type}">${c}</span>`;
+      let t = 'dc-short';
+      if (cl.includes('100')||cl.includes('70')||cl.includes('50')) t='dc-ultra';
+      else if (cl==='풀'||cl.includes('42')) t='dc-full';
+      else if (cl==='하프'||cl.includes('21')) t='dc-half';
+      else if (cl.includes('vk')||cl.includes('kids')||cl.includes('trail')) t='dc-trail';
+      return `<span class="dc ${t}">${c}</span>`;
     }).join('');
 
-    // CTA 버튼
     const cta = document.getElementById('ctaBtn');
-    if (r.status === '마감' || r.status === '종료') {
-      cta.className = 'cta-register closed';
-      cta.innerHTML = '접수 마감';
+    if (r.status==='마감'||r.status==='종료') {
+      cta.className='cta-reg closed'; cta.textContent='접수 마감';
     } else {
-      cta.className = 'cta-register';
-      cta.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
+      cta.className='cta-reg';
+      cta.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
     }
 
-    // 링크
-    document.getElementById('detailLinkText').textContent = r.detail_url?.replace('https://', '') || 'marathongo.co.kr';
+    document.getElementById('dLink').textContent = (r.detail_url||'marathongo.co.kr').replace('https://','');
 
-    wished = false;
-    document.getElementById('wishIcon').setAttribute('fill', 'none');
-    document.getElementById('wishIcon').setAttribute('stroke', 'white');
+    wished=false;
+    document.getElementById('wishIcon').setAttribute('fill','none');
+    document.getElementById('wishIcon').setAttribute('stroke','white');
 
     document.getElementById('screen-list').classList.remove('active');
     document.getElementById('screen-detail').classList.add('active');
-    document.getElementById('tabBar').style.display = 'none';
-    document.getElementById('detail-' + (currentTab !== 'list' ? currentTab : 'list'));
-    document.getElementById('screen-detail').querySelector('.detail-scroll').scrollTop = 0;
+    document.querySelector('.d-scroll').scrollTop = 0;
   }
 
   function showList() {
     document.getElementById('screen-detail').classList.remove('active');
-    document.getElementById('screen-' + currentTab).classList.add('active');
-    document.getElementById('tabBar').style.display = 'flex';
+    document.getElementById('screen-list').classList.add('active');
   }
 
-  function openDetailUrl() {
-    if (selectedRace?.detail_url) window.open(selectedRace.detail_url, '_blank');
+  function openUrl() {
+    if (selectedRace?.detail_url) window.open(selectedRace.detail_url,'_blank');
   }
 
   function shareRace() {
     if (!selectedRace) return;
-    const text = `[런뉴] ${selectedRace.title}\n📅 ${selectedRace.date}\n📍 ${selectedRace.location}`;
-    if (navigator.share) {
-      navigator.share({ title: selectedRace.title, text, url: selectedRace.detail_url || location.href });
-    } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => alert('클립보드에 복사됐어요!'));
-    }
+    const text = `[런뉴] ${selectedRace.title}\n📅 ${selectedRace.date}\n📍 ${selectedRace.location||''}`;
+    if (navigator.share) navigator.share({title:selectedRace.title, text, url:selectedRace.detail_url||location.href});
+    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(()=>alert('클립보드에 복사됐어요!'));
   }
 
   function toggleWish() {
     wished = !wished;
-    const icon = document.getElementById('wishIcon');
-    icon.setAttribute('fill', wished ? '#ff4d2e' : 'none');
-    icon.setAttribute('stroke', wished ? '#ff4d2e' : 'white');
+    document.getElementById('wishIcon').setAttribute('fill', wished?'#ff4d2e':'none');
+    document.getElementById('wishIcon').setAttribute('stroke', wished?'#ff4d2e':'white');
   }
 
-  // ── 탭 ──
-  function switchTab(tab) {
-    document.getElementById('screen-' + currentTab).classList.remove('active');
-    document.getElementById('tab-' + currentTab)?.classList.remove('active');
-    currentTab = tab;
-    document.getElementById('screen-' + tab).classList.add('active');
-    document.getElementById('tab-' + tab)?.classList.add('active');
-  }
-
-  // ── 필터 칩 ──
-  document.getElementById('filterRow').addEventListener('click', e => {
-    const chip = e.target.closest('.chip');
-    if (!chip) return;
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    applyFilter(chip.dataset.filter);
-  });
-
-  // ── 초기화 ──
   loadRaces();
 </script>
 </body>
