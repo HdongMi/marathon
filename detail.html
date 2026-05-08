@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>런뉴 — 대회 상세</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ── 상세 전용 스타일 ── */
+  .d-scroll { flex: 1; overflow-y: auto; }
+  .d-scroll::-webkit-scrollbar { display: none; }
+
+  /* 히어로 */
+  .d-hero { position: relative; height: 260px; overflow: hidden; flex-shrink: 0; }
+  .d-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.5); }
+  .d-hero-grad {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, var(--bg) 100%);
+  }
+  .d-back {
+    position: absolute; top: 16px; left: 16px;
+    width: 38px; height: 38px; background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(10px); text-decoration: none;
+  }
+  .d-wish {
+    position: absolute; top: 16px; right: 16px;
+    width: 38px; height: 38px; background: rgba(0,0,0,.55);
+    border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(10px);
+  }
+  .d-hero-txt { position: absolute; bottom: 20px; left: 20px; right: 68px; }
+  .d-hero-txt h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px; font-weight: 800; color: #fff;
+    line-height: 1.2; text-shadow: 0 2px 12px rgba(0,0,0,.6);
+  }
+
+  /* 본문 */
+  .d-body { padding: 20px; }
+
+  /* 코스 배지 (큰 것) */
+  .d-courses { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .dc {
+    padding: 7px 16px; border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 1px;
+  }
+  .dc-full  { background: rgba(232,240,0,.15); color: var(--accent);  border: 1px solid rgba(232,240,0,.3); }
+  .dc-half  { background: rgba(0,201,167,.15);  color: var(--teal);   border: 1px solid rgba(0,201,167,.3); }
+  .dc-trail { background: rgba(120,100,255,.15);color: var(--purple); border: 1px solid rgba(120,100,255,.3); }
+  .dc-short { background: rgba(0,180,255,.15);  color: var(--blue);   border: 1px solid rgba(0,180,255,.3); }
+  .dc-ultra { background: rgba(255,160,0,.15);  color: var(--orange); border: 1px solid rgba(255,160,0,.3); }
+
+  /* 정보 그리드 */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .info-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+  }
+  .info-box.hi { border-color: rgba(232,240,0,.25); }
+  .info-lbl {
+    font-size: 10px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
+  }
+  .info-val { font-size: 13px; color: var(--text); font-weight: 700; line-height: 1.5; }
+
+  /* 섹션 */
+  .d-section { margin-bottom: 24px; }
+  .d-sec-title {
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .d-sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* 링크 행 */
+  .link-row {
+    display: flex; align-items: center; gap: 10px; padding: 13px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; cursor: pointer; transition: border-color .2s;
+    text-decoration: none;
+  }
+  .link-row:active { border-color: var(--accent); }
+  .link-icon {
+    width: 34px; height: 34px; border-radius: 10px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+  }
+  .link-text { font-size: 13px; color: var(--text); font-weight: 500; }
+
+  /* CTA 바 */
+  .cta-bar {
+    padding: 10px 20px 24px;
+    background: linear-gradient(to top, var(--bg) 55%, transparent);
+    display: flex; gap: 10px; flex-shrink: 0;
+  }
+  .cta-share {
+    width: 52px; height: 52px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .cta-share:active { border-color: var(--accent); }
+  .cta-reg {
+    flex: 1; height: 52px; border-radius: 14px;
+    background: var(--accent); border: none;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; color: #000;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform .15s;
+  }
+  .cta-reg.closed { background: var(--surface2); color: var(--muted); cursor: default; }
+  .cta-reg:not(.closed):active { transform: scale(.97); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="d-scroll">
+
+    <!-- 히어로 -->
+    <div class="d-hero">
+      <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="" id="heroImg">
+      <div class="d-hero-grad"></div>
+      <a class="d-back" href="index.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </a>
+      <div class="d-wish" id="wishBtn" onclick="onToggleWish()">
+        <svg id="wishIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <div class="d-hero-txt">
+        <h1 id="dTitle">로딩 중...</h1>
+      </div>
+    </div>
+
+    <!-- 본문 -->
+    <div class="d-body">
+
+      <!-- 코스 배지 -->
+      <div class="d-courses" id="dCourses"></div>
+
+      <!-- 정보 그리드 -->
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-lbl">📍 장소</div>
+          <div class="info-val" id="dLocation">–</div>
+        </div>
+        <div class="info-box hi">
+          <div class="info-lbl">📅 대회일</div>
+          <div class="info-val" id="dDate">–</div>
+        </div>
+        <div class="info-box">
+          <div class="info-lbl">📋 접수 기간</div>
+          <div class="info-val" id="dReg" style="font-size:11px;line-height:1.6">–</div>
+        </div>
+        <div class="info-box">
+          <div class="info-lbl">🏁 접수 상태</div>
+          <div class="info-val" id="dStatus">–</div>
+        </div>
+      </div>
+
+      <!-- 공식 링크 -->
+      <div class="d-section">
+        <div class="d-sec-title">공식 링크</div>
+        <a class="link-row" id="dLinkRow" href="#" target="_blank" rel="noopener">
+          <div class="link-icon">🌐</div>
+          <div class="link-text" id="dLinkText">marathongo.co.kr</div>
+        </a>
+      </div>
+
+    </div>
+    <div style="height:90px"></div>
+  </div><!-- /d-scroll -->
+
+  <!-- CTA 바 -->
+  <div class="cta-bar">
+    <div class="cta-share" id="shareBtn" onclick="onShare()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+        <line x1="15.41" y1="6.51"  x2="8.59"  y2="10.49"/>
+      </svg>
+    </div>
+    <button class="cta-reg" id="ctaBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+      대회 신청하기
+    </button>
+  </div>
+
+</div>
+
+<script src="app.js"></script>
+<script>
+  let race = null;
+
+  /* ── URL 파라미터에서 인덱스 읽기 ── */
+  const idx = parseInt(new URLSearchParams(location.search).get('i'));
+
+  /* ── 찜 아이콘 업데이트 ── */
+  function updateWishIcon(wished) {
+    document.getElementById('wishIcon').setAttribute('fill',   wished ? '#ff4d2e' : 'none');
+    document.getElementById('wishIcon').setAttribute('stroke', wished ? '#ff4d2e' : 'white');
+  }
+
+  /* ── 찜 버튼 클릭 ── */
+  function onToggleWish() {
+    if (!race) return;
+    const wished = toggleWish(race.title);
+    updateWishIcon(wished);
+    document.getElementById('wishCount') && (document.getElementById('wishCount').textContent = getWishCount());
+  }
+
+  /* ── 공유 버튼 ── */
+  function onShare() { if (race) shareRace(race); }
+
+  /* ── 코스 배지 타입 ── */
+  function dcClass(c) {
+    const l = c.toLowerCase();
+    if (l.includes('100')||l.includes('70')||l.includes('50')) return 'dc-ultra';
+    if (l === '풀'  || l.includes('42'))  return 'dc-full';
+    if (l === '하프'|| l.includes('21'))  return 'dc-half';
+    if (l.includes('vk')||l.includes('kids')||l.includes('trail')) return 'dc-trail';
+    return 'dc-short';
+  }
+
+  /* ── 상태 색상 ── */
+  const STATUS_COLOR = {
+    '접수중': 'var(--accent)',
+    '마감':   'var(--muted)',
+    '접수전': 'var(--blue)',
+    '종료':   'var(--muted)'
+  };
+
+  /* ── 초기화 ── */
+  (async () => {
+    restoreSession();
+    const races = await loadRaces();
+
+    if (isNaN(idx) || idx < 0 || idx >= races.length) {
+      document.getElementById('dTitle').textContent = '대회를 찾을 수 없어요';
+      return;
+    }
+
+    race = races[idx];
+    const r = race;
+
+    /* 페이지 타이틀 */
+    document.title = `런뉴 — ${r.title}`;
+
+    /* 히어로 */
+    document.getElementById('dTitle').textContent = r.title;
+
+    /* 코스 배지 */
+    document.getElementById('dCourses').innerHTML =
+      (r.courses||[]).map(c => `<span class="dc ${dcClass(c)}">${c}</span>`).join('');
+
+    /* 정보 박스 */
+    document.getElementById('dLocation').textContent = (r.region||'') + ' ' + (r.location||'');
+    document.getElementById('dDate').textContent     = r.date + ' (' + r.dow + ')';
+    document.getElementById('dReg').textContent      = r.reg_period || '–';
+
+    const statusEl = document.getElementById('dStatus');
+    statusEl.textContent  = r.status || '–';
+    statusEl.style.color  = STATUS_COLOR[r.status] || 'var(--text)';
+
+    /* 링크 */
+    const linkRow  = document.getElementById('dLinkRow');
+    const linkText = document.getElementById('dLinkText');
+    if (r.detail_url) {
+      linkRow.href       = r.detail_url;
+      linkText.textContent = r.detail_url.replace('https://','');
+    }
+
+    /* CTA 버튼 */
+    const cta = document.getElementById('ctaBtn');
+    if (r.status === '마감' || r.status === '종료') {
+      cta.className   = 'cta-reg closed';
+      cta.textContent = '접수 마감';
+      cta.onclick     = null;
+    } else {
+      cta.className = 'cta-reg';
+      cta.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
+      cta.onclick   = () => { if (r.detail_url) window.open(r.detail_url, '_blank'); };
+    }
+
+    /* 찜 아이콘 초기 상태 */
+    updateWishIcon(wishlist.includes(r.title));
+  })();
+</script>
+</body>
+</html>
