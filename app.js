@@ -60,7 +60,7 @@ function loginGoogle() {
       /* One Tap 실패 시 OAuth 팝업 fallback */
       const params = new URLSearchParams({
         client_id:    GOOGLE_CID,
-        redirect_uri: location.origin + '/oauth/google',   // 더미 URI (토큰 파싱용)
+        redirect_uri: location.origin + location.pathname, // 현재 페이지 URL
         response_type:'token',
         scope:        'openid email profile',
         prompt:       'select_account'
