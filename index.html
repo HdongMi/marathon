@@ -6,225 +6,121 @@
 <title>런뉴 — 대회 일정</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* 📱 전체 화면 및 모바일 래퍼 통일 (비율/스크롤 틀어짐 방지) */
-  * { box-sizing: border-box; }
-  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100%; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
-
-  /* 탭 콘텐츠 공통 (내부에서만 스크롤) */
-  .tab-content { width: 100%; flex: 1; overflow-y: auto; padding-bottom: 80px; }
-  .tab-content::-webkit-scrollbar { display: none; }
-
-  /* ── 1. 대회 목록 탭 스타일 ── */
-  .hero-section { position: relative; height: 260px; display: flex; flex-direction: column; justify-content: flex-end; padding: 24px; flex-shrink: 0; }
-  .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80') center/cover; filter: brightness(0.4); z-index: 0; }
-  .hero-content { position: relative; z-index: 1; }
-  .logo-title { font-family: 'Bebas Neue', sans-serif; font-size: 46px; margin: 0; letter-spacing: 2px; line-height: 1; }
-  .logo-title span { color: #FFFF00; }
-  .sub-title { font-size: 12px; color: #aaa; margin-top: 8px; font-weight: 300; }
-
-  .update-info { background-color: #1a1a10; color: #888; font-size: 11px; padding: 12px 24px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #222; flex-shrink: 0; }
-  .update-info .dot { color: #8bc34a; font-size: 14px; }
-  .content-wrap { padding: 24px; }
-
-  /* 필터 영역 */
-  .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .filter-header h3 { font-size: 13px; margin: 0; font-weight: normal; color: #ccc; }
-  .btn-reset { background: none; border: none; color: #FFFF00; font-size: 12px; cursor: pointer; font-weight: bold; padding: 0; }
+  /* 화면이 브라우저 밖으로 길어지지 않게 앱처럼 100vh로 꽉 묶어줍니다 */
+  .page { height: 100vh; max-height: 100vh; }
   
-  .filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
-  .c-check { cursor: pointer; }
-  .c-check input { display: none; }
-  .chk-box { background-color: #1c1c1c; border-radius: 12px; padding: 16px 4px; text-align: center; border: 1px solid #2a2a2a; transition: 0.2s; }
-  .c-check input:checked + .chk-box { border-color: #FFFF00; background-color: #2a2a1a; }
-  .chk-box .icon { display: block; font-size: 22px; margin-bottom: 6px; }
-  .chk-box .txt { font-size: 11px; color: #aaa; font-weight: bold; }
+  /* 탭 콘텐츠 화면 구조 */
+  .tab-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+  .scroll-area { flex: 1; overflow-y: auto; }
+  .scroll-area::-webkit-scrollbar { display: none; }
 
-  .toggle-wrap { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 16px 0; margin-bottom: 24px; }
-  .toggle-wrap span { font-size: 13px; color: #ccc; }
-  .toggle-switch { width: 44px; height: 24px; background-color: #333; border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; }
-  .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background-color: #888; border-radius: 50%; transition: 0.3s; }
-  .toggle-switch.on { background-color: #8bc34a; }
-  .toggle-switch.on::after { left: 22px; background-color: #fff; }
-
-  /* 리스트 영역 */
-  .list-header { font-size: 13px; color: #aaa; margin-bottom: 16px; }
-  .list-header strong { color: #fff; font-size: 15px; }
-
-  #raceList { display: flex; flex-direction: column; gap: 12px; }
-  .race-card { background-color: #1c1c1c; border-radius: 16px; padding: 16px; display: flex; align-items: center; text-decoration: none; border: 1px solid #2a2a2a; color: #fff; }
-  .date-box { background-color: #2a2a2a; border-radius: 12px; width: 64px; height: 64px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-right: 16px; flex-shrink: 0; }
-  .date-box .mo { font-size: 11px; color: #FFFF00; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-  .date-box .dy { font-size: 22px; font-weight: bold; color: #fff; line-height: 1; margin-bottom: 2px; }
-  .date-box .dw { font-size: 11px; color: #888; }
-  
-  .card-info { flex-grow: 1; overflow: hidden; }
-  .badges { margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .badges .b { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-  .b-ultra { background: #4a235a; color: #d7bde2; border: 1px solid #4a235a; }
-  .b-full { border: 1px solid #7d6608; color: #f1c40f; }
-  .b-half { background: #0b5345; color: #1abc9c; border: 1px solid #0b5345; }
-  .b-10k { border: 1px solid #641e16; color: #e74c3c; }
-  .b-5k { background: #154360; color: #3498db; border: 1px solid #154360; }
-  
-  .card-title { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-meta { font-size: 12px; color: #888; }
-  .card-right { margin-left: 10px; flex-shrink: 0; }
-  .dday { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #333; color: #aaa; font-weight: bold; }
-  .dday.close { background: #222; color: #666; }
-
-
-  /* ── 2. 마이페이지 탭 스타일 ── */
-  .my-page-wrap { padding: 30px 20px; }
-  
-  .profile-card { background: #1c1c1c; border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 30px; border: 1px solid #2a2a2a; }
-  .my-avatar { width: 68px; height: 68px; border-radius: 50%; overflow: hidden; background: #673ab7; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #fff; flex-shrink: 0; }
-  .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .profile-info { flex-grow: 1; overflow: hidden; }
-  .my-name { font-size: 20px; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .my-email { font-size: 13px; color: #aaa; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .my-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-  .my-badge.kakao { background: #FEE500; color: #000; }
-  .my-badge.google { background: #fff; color: #333; }
-
-  .menu-group { margin-bottom: 30px; }
-  .menu-title { font-size: 13px; color: #aaa; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; padding-left: 4px; }
-  
-  .menu-item { display: flex; align-items: center; background: #1c1c1c; border-radius: 16px; padding: 18px 20px; text-decoration: none; color: #fff; margin-bottom: 10px; border: 1px solid #2a2a2a; transition: background 0.2s; }
-  .menu-item:active { background: #222; }
-  .menu-icon { font-size: 22px; margin-right: 16px; }
-  .menu-label { flex: 1; font-size: 15px; font-weight: bold; }
-  .menu-count { font-size: 18px; font-weight: bold; color: #FFFF00; margin-right: 12px; }
-  .menu-arrow { color: #666; font-size: 20px; font-weight: 300; }
-  
-  .logout-item { justify-content: center; color: #ff4b2b; cursor: pointer; }
-  .logout-item .menu-label { flex: none; font-size: 15px; font-weight: bold; margin-left: 10px; }
-  .logout-item svg { width: 20px; height: 20px; stroke: #ff4b2b; }
-
-  /* ── 3. 하단 탭바 ── */
-  .tab-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 64px; background-color: #121212; display: flex; border-top: 1px solid #222; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-  .tab-btn { flex: 1; background: none; border: none; color: #666; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; font-weight: bold; transition: color 0.2s; }
-  .tab-btn.active { color: #FFFF00; }
-  .tab-btn svg { width: 22px; height: 22px; }
+  /* 히어로(상단 배경) 영역 전용 스타일 */
+  .list-hero { position: relative; height: 220px; flex-shrink: 0; }
+  .list-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4); }
+  .list-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%); }
+  .list-hero-content { position: absolute; bottom: 20px; left: 20px; right: 20px; }
+  .list-hero-content h1 { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: #fff; line-height: 1; letter-spacing: 2px; }
+  .list-hero-content h1 span { color: var(--accent); }
+  .hero-sub { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 6px; }
 </style>
 </head>
 <body>
+<div class="page" id="app">
 
-  <div class="app-container" id="app">
-
-    <div id="tabList" class="tab-content" style="display:flex;flex-direction:column;">
-      <header class="hero-section">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
-          <h1 class="logo-title">RUN <span>NOW</span></h1>
-          <p class="sub-title">국내 마라톤 · 트레일 · 러닝 대회</p>
-        </div>
-      </header>
-
-      <div class="update-info">
-        <span class="dot">●</span> 
-        <span id="updateTime">데이터 로드 중...</span>
-      </div>
-
-      <main class="content-wrap">
-        <section>
-          <div class="filter-header">
-            <h3>코스 종류</h3>
-            <button class="filter-reset btn-reset" onclick="resetFilters()">전체 보기</button>
-          </div>
-          <div class="filter-grid">
-            <label class="c-check">
-              <input type="checkbox" value="풀" onchange="applyFilter()">
-              <div class="chk-box"><span class="icon">🥇</span><span class="txt">풀코스</span></div>
-            </label>
-            <label class="c-check">
-              <input type="checkbox" value="하프" onchange="applyFilter()">
-              <div class="chk-box"><span class="icon">🥈</span><span class="txt">하프</span></div>
-            </label>
-            <label class="c-check">
-              <input type="checkbox" value="10km" onchange="applyFilter()">
-              <div class="chk-box"><span class="icon">🏃</span><span class="txt">10km</span></div>
-            </label>
-            <label class="c-check">
-              <input type="checkbox" value="5km" onchange="applyFilter()">
-              <div class="chk-box"><span class="icon">👟</span><span class="txt">5km</span></div>
-            </label>
-          </div>
-        </section>
-
-        <section class="toggle-wrap">
-          <span>접수중인 대회만 보기</span>
-          <div id="openTog" class="toggle-switch" onclick="toggleOpen()"></div>
-        </section>
-
-        <section>
-          <div class="list-header">
-            총 <strong id="raceCount">0</strong>개 대회
-          </div>
-          <div id="raceList">
-             <div style="text-align:center; padding: 40px; color: #666;">대회 정보를 불러오고 있습니다...</div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <div id="tabMy" class="tab-content" style="display:none;flex-direction:column;">
-      <div class="my-page-wrap">
-        
-        <div class="profile-card">
-          <div id="myAvatarWrap"></div>
-          <div class="profile-info">
-            <div class="my-name" id="myName">–</div>
-            <div class="my-email" id="myEmail">–</div>
-            <div class="my-badge" id="myBadge"></div>
-          </div>
-        </div>
-
-        <div class="menu-group">
-          <div class="menu-title">내 활동</div>
-          <a class="menu-item" href="wishlist.html">
-            <div class="menu-icon">❤️</div>
-            <div class="menu-label">찜한 대회</div>
-            <div class="menu-count" id="wishCount">0</div>
-            <div class="menu-arrow">›</div>
-          </a>
-        </div>
-
-        <div class="menu-group">
-          <div class="menu-title">계정</div>
-          <div class="menu-item logout-item" onclick="doLogout()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-            <div class="menu-label">로그아웃</div>
-          </div>
-        </div>
-
+  <div id="tabList" class="tab-content">
+    
+    <div class="list-hero">
+      <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80" alt="마라톤">
+      <div class="list-hero-overlay"></div>
+      <div class="list-hero-content">
+        <h1>RUN <span>NOW</span></h1>
+        <div class="hero-sub">국내 마라톤 · 트레일 · 러닝 대회</div>
       </div>
     </div>
 
-    <nav class="tab-bar">
-      <button class="tab-btn active" id="btn-list" onclick="showTab('list')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="8" y1="6"  x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
-          <line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6"  x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
-          <line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>
-        대회목록
-      </button>
-      <button class="tab-btn" id="btn-my" onclick="showTab('my')" style="display:none">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-        </svg>
-        마이
-      </button>
-    </nav>
+    <div class="update-banner">
+      <div class="update-dot"></div>
+      <span id="updateTime">데이터 로딩 중...</span>
+    </div>
 
+    <div class="scroll-area">
+      <div class="filter-section">
+        <div class="filter-top">
+          <span class="filter-title">코스 종류</span>
+          <button class="filter-reset" onclick="resetFilters()">전체 보기</button>
+        </div>
+        <div class="course-grid">
+          <label class="c-check"><input type="checkbox" value="풀" onchange="applyFilter()"><div class="c-box"><span class="c-icon">🥇</span><span class="c-name">풀코스</span></div></label>
+          <label class="c-check"><input type="checkbox" value="하프" onchange="applyFilter()"><div class="c-box"><span class="c-icon">🥈</span><span class="c-name">하프</span></div></label>
+          <label class="c-check"><input type="checkbox" value="10km" onchange="applyFilter()"><div class="c-box"><span class="c-icon">🏃</span><span class="c-name">10km</span></div></label>
+          <label class="c-check"><input type="checkbox" value="5km" onchange="applyFilter()"><div class="c-box"><span class="c-icon">👟</span><span class="c-name">5km</span></div></label>
+        </div>
+        <div class="open-toggle-row">
+          <span class="open-toggle-label">접수중인 대회만 보기</span>
+          <div class="tog" id="openTog" onclick="toggleOpen()"><div class="tog-knob"></div></div>
+        </div>
+      </div>
+
+      <div class="count-row">
+        <span class="count-label">총 <strong id="raceCount">–</strong>개 대회</span>
+      </div>
+
+      <div class="race-list" id="raceList">
+        <div class="state-box">
+          <div class="spinner"></div>
+          <div class="state-text">대회 정보를 불러오는 중...</div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div id="tabMy" class="tab-content" style="display:none;">
+    <div class="scroll-area">
+      
+      <div class="my-header">
+        <div id="myAvatarWrap"></div>
+        <div>
+          <div class="my-name" id="myName">–</div>
+          <div class="my-email" id="myEmail">–</div>
+          <div class="my-badge" id="myBadge"></div>
+        </div>
+      </div>
+
+      <div class="my-section">
+        <div class="my-sec-title">내 활동</div>
+        <a class="my-item" href="wishlist.html">
+          <div class="my-item-icon">❤️</div>
+          <div class="my-item-label">찜한 대회</div>
+          <span class="my-item-count" id="wishCount">0</span>
+          <div class="my-item-arrow">›</div>
+        </a>
+      </div>
+
+      <div class="my-section">
+        <div class="my-sec-title">계정</div>
+        <div class="logout-row" onclick="doLogout()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          로그아웃
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" id="btn-list" onclick="showTab('list')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      대회목록
+    </button>
+    <button class="tab-btn" id="btn-my" onclick="showTab('my')" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      마이
+    </button>
+  </nav>
+
+</div>
 
 <script src="app.js"></script>
 <script>
@@ -237,39 +133,36 @@
 
   function renderMy() {
     if (!currentUser) return;
-    
     document.getElementById('myName').textContent  = currentUser.name || '유저';
     document.getElementById('myEmail').textContent = currentUser.email || '이메일 없음';
-
+    
     const wrap = document.getElementById('myAvatarWrap');
     wrap.innerHTML = currentUser.photo
       ? `<div class="my-avatar"><img src="${currentUser.photo}" alt="프로필"></div>`
-      : `<div class="my-avatar">${(currentUser.name || 'U')[0]}</div>`;
-
+      : `<div class="my-avatar-ph">${(currentUser.name || 'U')[0]}</div>`;
+    
     const badge = document.getElementById('myBadge');
     badge.className = 'my-badge ' + (currentUser.provider === 'kakao' ? 'kakao' : 'google');
     badge.textContent = currentUser.provider === 'kakao' ? '카카오 로그인' : 'Google 로그인';
-
-    if(typeof getWishCount === 'function') {
-      document.getElementById('wishCount').textContent = getWishCount();
-    }
+    
+    if(typeof getWishCount === 'function') document.getElementById('wishCount').textContent = getWishCount();
   }
 
   (async () => {
-    const loggedIn = restoreSession();
-    if (!loggedIn) {
+    if (!restoreSession()) {
       window.location.href = getBasePath() + 'login.html';
-    } else {
-      document.getElementById('btn-my').style.display = 'flex';
-      renderMy();
+      return;
+    }
+    
+    document.getElementById('btn-my').style.display = 'flex';
+    renderMy();
 
-      const races = await loadRaces();
-      if (!races || races.length === 0) {
-        document.getElementById('raceList').innerHTML = `<div style="text-align:center; padding:40px; color:#666;">대회 데이터가 없습니다.</div>`;
-      } else {
-        if(typeof applyFilter === 'function') applyFilter(); 
-        else if(typeof render === 'function') render(races);
-      }
+    const races = await loadRaces();
+    if (!races || races.length === 0) {
+      document.getElementById('raceList').innerHTML = `<div class="state-box"><div style="font-size:36px">⚠️</div><div class="state-text">대회 정보가 없습니다.</div></div>`;
+    } else {
+      if(typeof applyFilter === 'function') applyFilter(); 
+      else if(typeof render === 'function') render(races);
     }
   })();
 </script>
