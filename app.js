@@ -64,7 +64,7 @@ function loginGoogle() {
       try {
         /* JWT Base64 디코딩 */
         const base64 = res.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-        const payload = JSON.parse(atob(base64));
+        const payload = JSON.parse(decodeURIComponent(escape(atob(base64))));
         afterLogin({
           name:     payload.name    || 'Google 유저',
           email:    payload.email   || '',
