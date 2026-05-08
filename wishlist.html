@@ -6,73 +6,38 @@
 <title>런뉴 — 찜한 대회</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* 📱 전체 화면 및 모바일 래퍼 통일 (index.html과 동일) */
-  * { box-sizing: border-box; }
-  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100%; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
-
-  /* 헤더 스타일 (고정) */
-  .sub-header { display: flex; align-items: center; padding: 20px 24px; background-color: #151515; border-bottom: 1px solid #222; flex-shrink: 0; z-index: 10; }
-  .btn-back { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 0; margin-right: 16px; line-height: 1; }
-  .sub-title { font-size: 18px; font-weight: bold; margin: 0; }
-
-  /* 리스트 영역 (이 안에서만 스크롤) */
-  .content-wrap { width: 100%; flex: 1; overflow-y: auto; padding: 24px; padding-bottom: 40px; }
-  .content-wrap::-webkit-scrollbar { display: none; }
+  /* index와 동일한 고정 프레임 설정 */
+  .page { height: 100vh; max-height: 100vh; }
   
-  .list-header { font-size: 13px; color: #aaa; margin-bottom: 16px; }
-  .list-header strong { color: #FFFF00; font-size: 15px; }
-
-  /* 카드 공통 스타일 */
-  #raceList { display: flex; flex-direction: column; gap: 12px; }
-  .race-card { background-color: #1c1c1c; border-radius: 16px; padding: 16px; display: flex; align-items: center; text-decoration: none; border: 1px solid #2a2a2a; color: #fff; }
-  .date-box { background-color: #2a2a2a; border-radius: 12px; width: 64px; height: 64px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-right: 16px; flex-shrink: 0; }
-  .date-box .mo { font-size: 11px; color: #FFFF00; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-  .date-box .dy { font-size: 22px; font-weight: bold; color: #fff; line-height: 1; margin-bottom: 2px; }
-  .date-box .dw { font-size: 11px; color: #888; }
-  
-  .card-info { flex-grow: 1; overflow: hidden; }
-  .badges { margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .badges .b { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; }
-  .b-ultra { background: #4a235a; color: #d7bde2; border: 1px solid #4a235a; }
-  .b-full { border: 1px solid #7d6608; color: #f1c40f; }
-  .b-half { background: #0b5345; color: #1abc9c; border: 1px solid #0b5345; }
-  .b-10k { border: 1px solid #641e16; color: #e74c3c; }
-  .b-5k { background: #154360; color: #3498db; border: 1px solid #154360; }
-  
-  .card-title { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card-meta { font-size: 12px; color: #888; }
-  .card-right { margin-left: 10px; flex-shrink: 0; }
-  .dday { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #333; color: #aaa; font-weight: bold; }
-  .dday.close { background: #222; color: #666; }
-  
-  /* 비어있을 때 스타일 */
-  .empty-state { text-align: center; padding: 60px 20px; color: #888; }
-  .empty-state .icon { font-size: 40px; margin-bottom: 16px; }
-  .empty-state p { margin: 0 0 20px 0; font-size: 15px; line-height: 1.5; }
-  .btn-primary { display: inline-block; background-color: #FFFF00; color: #000; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; }
+  /* 비어있을 때 스타일 추가 */
+  .empty-state { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+  .btn-primary { display: inline-block; background: var(--accent); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 14px; }
 </style>
 </head>
 <body>
-
-  <div class="app-container">
-    
-    <header class="sub-header">
-      <button class="btn-back" onclick="history.back()">‹</button>
-      <h1 class="sub-title">찜한 대회</h1>
-    </header>
-
-    <main class="content-wrap">
-      <div class="list-header">
-        총 <strong id="raceCount">0</strong>개 대회
-      </div>
-      
-      <div id="raceList">
-        <div style="text-align:center; padding:40px; color:#666;">데이터를 불러오는 중...</div>
-      </div>
-    </main>
-
+<div class="page">
+  
+  <div class="sub-header">
+    <button class="sub-back" onclick="history.back()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="sub-title">찜한 대회</div>
   </div>
+
+  <div class="count-row">
+    <span class="count-label">총 <strong id="raceCount">0</strong>개 대회</span>
+  </div>
+
+  <div class="race-list" id="raceList">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div class="state-text">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+
+</div>
 
 <script src="app.js"></script>
 <script>
@@ -87,9 +52,11 @@
     const myWishes = allRaces.filter(function(r) {
       return wishlist.includes(r.title); 
     });
+    
+    // 개수 업데이트
+    document.getElementById('raceCount').textContent = myWishes.length;
 
     if (myWishes.length === 0) {
-      document.getElementById('raceCount').textContent = '0';
       document.getElementById('raceList').innerHTML = `
         <div class="empty-state">
           <div class="icon">💔</div>
