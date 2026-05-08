@@ -6,12 +6,13 @@
 <title>런뉴 — 대회 일정</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* 기본 및 모바일 래퍼 설정 */
-  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; }
-  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100vh; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
+  /* 📱 전체 화면 및 모바일 래퍼 통일 (비율/스크롤 틀어짐 방지) */
+  * { box-sizing: border-box; }
+  body { background-color: #000; margin: 0; padding: 0; font-family: 'Noto Sans KR', sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+  .app-container { width: 100%; max-width: 480px; background-color: #0f0f0f; height: 100%; position: relative; color: #fff; display: flex; flex-direction: column; overflow: hidden; }
 
-  /* 탭 콘텐츠 공통 */
-  .tab-content { flex: 1; overflow-y: auto; padding-bottom: 80px; /* 하단 탭바 여백 */ }
+  /* 탭 콘텐츠 공통 (내부에서만 스크롤) */
+  .tab-content { width: 100%; flex: 1; overflow-y: auto; padding-bottom: 80px; }
   .tab-content::-webkit-scrollbar { display: none; }
 
   /* ── 1. 대회 목록 탭 스타일 ── */
@@ -22,7 +23,7 @@
   .logo-title span { color: #FFFF00; }
   .sub-title { font-size: 12px; color: #aaa; margin-top: 8px; font-weight: 300; }
 
-  .update-info { background-color: #1a1a10; color: #888; font-size: 11px; padding: 12px 24px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #222; }
+  .update-info { background-color: #1a1a10; color: #888; font-size: 11px; padding: 12px 24px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #222; flex-shrink: 0; }
   .update-info .dot { color: #8bc34a; font-size: 14px; }
   .content-wrap { padding: 24px; }
 
@@ -68,15 +69,14 @@
   
   .card-title { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card-meta { font-size: 12px; color: #888; }
-  .card-right { margin-left: 10px; }
+  .card-right { margin-left: 10px; flex-shrink: 0; }
   .dday { font-size: 11px; padding: 4px 10px; border-radius: 4px; background: #333; color: #aaa; font-weight: bold; }
   .dday.close { background: #222; color: #666; }
 
 
-  /* ── 2. 마이페이지 탭 스타일 (카드형 UI 복원!) ── */
+  /* ── 2. 마이페이지 탭 스타일 ── */
   .my-page-wrap { padding: 30px 20px; }
   
-  /* 프로필 카드 */
   .profile-card { background: #1c1c1c; border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 30px; border: 1px solid #2a2a2a; }
   .my-avatar { width: 68px; height: 68px; border-radius: 50%; overflow: hidden; background: #673ab7; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: #fff; flex-shrink: 0; }
   .my-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -87,11 +87,9 @@
   .my-badge.kakao { background: #FEE500; color: #000; }
   .my-badge.google { background: #fff; color: #333; }
 
-  /* 메뉴 그룹 */
   .menu-group { margin-bottom: 30px; }
   .menu-title { font-size: 13px; color: #aaa; margin-bottom: 12px; font-weight: bold; letter-spacing: 1px; padding-left: 4px; }
   
-  /* 메뉴 카드 아이템 */
   .menu-item { display: flex; align-items: center; background: #1c1c1c; border-radius: 16px; padding: 18px 20px; text-decoration: none; color: #fff; margin-bottom: 10px; border: 1px solid #2a2a2a; transition: background 0.2s; }
   .menu-item:active { background: #222; }
   .menu-icon { font-size: 22px; margin-right: 16px; }
@@ -99,7 +97,6 @@
   .menu-count { font-size: 18px; font-weight: bold; color: #FFFF00; margin-right: 12px; }
   .menu-arrow { color: #666; font-size: 20px; font-weight: 300; }
   
-  /* 로그아웃 버튼 전용 */
   .logout-item { justify-content: center; color: #ff4b2b; cursor: pointer; }
   .logout-item .menu-label { flex: none; font-size: 15px; font-weight: bold; margin-left: 10px; }
   .logout-item svg { width: 20px; height: 20px; stroke: #ff4b2b; }
@@ -227,9 +224,10 @@
       </button>
     </nav>
 
-  </div> <script src="app.js"></script>
+  </div>
+
+<script src="app.js"></script>
 <script>
-  /* 탭 전환 */
   function showTab(tab) {
     document.getElementById('tabList').style.display = tab === 'list' ? 'flex' : 'none';
     document.getElementById('tabMy').style.display   = tab === 'my'   ? 'flex' : 'none';
@@ -237,7 +235,6 @@
     document.getElementById('btn-my').classList.toggle('active',   tab === 'my');
   }
 
-  /* 마이페이지 정보 세팅 */
   function renderMy() {
     if (!currentUser) return;
     
@@ -247,7 +244,7 @@
     const wrap = document.getElementById('myAvatarWrap');
     wrap.innerHTML = currentUser.photo
       ? `<div class="my-avatar"><img src="${currentUser.photo}" alt="프로필"></div>`
-      : `<div class="my-avatar">${(currentUser.name || 'U')[0]}</div>`; // 사진 없을 시 보라색 배경에 첫글자
+      : `<div class="my-avatar">${(currentUser.name || 'U')[0]}</div>`;
 
     const badge = document.getElementById('myBadge');
     badge.className = 'my-badge ' + (currentUser.provider === 'kakao' ? 'kakao' : 'google');
@@ -258,7 +255,6 @@
     }
   }
 
-  /* 시작 로직 */
   (async () => {
     const loggedIn = restoreSession();
     if (!loggedIn) {
