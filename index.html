@@ -4,54 +4,150 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>런뉴 — 대회 일정</title>
-<link rel="stylesheet" href="style.css"> <style>
-  /* 기본 화면 세팅 (style.css가 있다면 거기에 맞춰서 예쁘게 나올 겁니다) */
-  body { background: #121212; color: #fff; font-family: 'Noto Sans KR', sans-serif; padding: 20px; margin: 0; }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
-  .logo span { color: #FF4B2B; }
-  .btn-logout { background: #333; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; }
+<link rel="stylesheet" href="style.css">
+<style>
+  /* 이미지 기반 레이아웃 복구 스타일 (style.css에 없는 내용 보완) */
+  body { background-color: #0f0f0f; color: #fff; font-family: 'Noto Sans KR', sans-serif; margin: 0; padding: 0; }
   
-  /* app.js가 렌더링할 때 필요한 최소한의 CSS */
-  #raceList { display: flex; flex-direction: column; gap: 15px; }
-  .race-card { background: #222; padding: 15px; border-radius: 12px; color: white; text-decoration: none; display: flex; justify-content: space-between; align-items: center; }
-  .date-box { text-align: center; margin-right: 15px; }
+  /* 히어로(상단) 영역 */
+  .hero-section { position: relative; height: 220px; display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80') center/cover; filter: brightness(0.4); z-index: -1; }
+  .logo-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; margin: 0; letter-spacing: 2px; }
+  .logo-title span { color: #FFFF00; }
+  .sub-title { font-size: 13px; color: #aaa; margin-top: 5px; font-weight: 300; }
+  .btn-logout { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+  /* 업데이트 인포 */
+  .update-info { background-color: #1a1a10; color: #888; font-size: 11px; padding: 12px 20px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #222; }
+  .update-info .dot { color: #8bc34a; font-size: 14px; }
+
+  /* 메인 컨텐츠 영역 */
+  .content-wrap { padding: 20px; }
+
+  /* 코스 종류 필터 */
+  .filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .filter-header h3 { font-size: 14px; margin: 0; font-weight: normal; color: #ccc; }
+  .btn-reset { background: none; border: none; color: #FFFF00; font-size: 12px; cursor: pointer; font-weight: bold; }
+  
+  .filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .c-check { cursor: pointer; }
+  .c-check input { display: none; }
+  .chk-box { background-color: #1c1c1c; border-radius: 12px; padding: 15px 5px; text-align: center; border: 1px solid #2a2a2a; transition: 0.2s; }
+  .c-check input:checked + .chk-box { border-color: #FFFF00; background-color: #2a2a1a; }
+  .chk-box .icon { display: block; font-size: 20px; margin-bottom: 6px; }
+  .chk-box .txt { font-size: 12px; color: #aaa; }
+
+  /* 토글 영역 */
+  .toggle-wrap { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #222; border-bottom: 1px solid #222; padding: 16px 0; margin-bottom: 20px; }
+  .toggle-wrap span { font-size: 14px; color: #ccc; }
+  .toggle-switch { width: 44px; height: 24px; background-color: #333; border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; }
+  .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background-color: #888; border-radius: 50%; transition: 0.3s; }
+  .toggle-switch.on { background-color: #8bc34a; }
+  .toggle-switch.on::after { left: 22px; background-color: #fff; }
+
+  /* 리스트 헤더 */
+  .list-header { font-size: 13px; color: #aaa; margin-bottom: 15px; }
+  .list-header strong { color: #fff; font-size: 15px; }
+
+  /* app.js에서 생성할 카드들의 기본 스타일 (필요시) */
+  #raceList { display: flex; flex-direction: column; gap: 12px; }
+  .race-card { background-color: #1c1c1c; border-radius: 16px; padding: 16px; display: flex; align-items: center; text-decoration: none; border: 1px solid #2a2a2a; }
+  .date-box { background-color: #2a2a2a; border-radius: 12px; padding: 10px; text-align: center; min-width: 60px; margin-right: 15px; }
+  .date-box .mo { font-size: 10px; color: #FFFF00; font-weight: bold; margin-bottom: 2px; }
+  .date-box .dy { font-size: 20px; font-weight: bold; color: #fff; line-height: 1; margin-bottom: 2px; }
+  .date-box .dw { font-size: 10px; color: #888; }
   .card-info { flex-grow: 1; }
-  .card-title { font-weight: bold; font-size: 16px; margin: 5px 0; }
-  .card-meta { font-size: 12px; color: #aaa; }
-  .badges .b { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-right: 4px; background: #444; }
-  .dday { font-size: 12px; font-weight: bold; color: #FF4B2B; }
+  .badges { margin-bottom: 6px; }
+  .badges .b { font-size: 10px; padding: 3px 6px; border-radius: 4px; margin-right: 4px; font-weight: bold; }
+  .b-ultra { background: #4a235a; color: #d7bde2; }
+  .b-full { border: 1px solid #7d6608; color: #f1c40f; }
+  .b-half { background: #0b5345; color: #1abc9c; }
+  .b-10k { border: 1px solid #641e16; color: #e74c3c; }
+  .b-5k { background: #154360; color: #3498db; }
+  .card-title { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 4px; }
+  .card-meta { font-size: 12px; color: #888; }
+  .card-right { text-align: right; }
+  .dday { font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #333; color: #aaa; }
+  .dday.close { background: #222; color: #666; }
 </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="logo">RUN<span>NU</span></div>
+  <header class="hero-section">
+    <div class="hero-bg"></div>
     <button class="btn-logout" onclick="doLogout()">로그아웃</button>
+    <h1 class="logo-title">RUN <span>NOW</span></h1>
+    <p class="sub-title">국내 마라톤 · 트레일 · 러닝 대회</p>
+  </header>
+
+  <div class="update-info">
+    <span class="dot">●</span> 
+    <span id="updateTime">데이터 로드 중...</span>
   </div>
 
-  <p id="updateTime" style="font-size:12px; color:#aaa; margin-bottom:20px;"></p>
+  <main class="content-wrap">
+    
+    <section>
+      <div class="filter-header">
+        <h3>코스 종류</h3>
+        <button class="btn-reset" onclick="resetFilters()">전체 보기</button>
+      </div>
+      <div class="filter-grid">
+        <label class="c-check">
+          <input type="checkbox" value="풀" onchange="applyFilter()">
+          <div class="chk-box">
+            <span class="icon">🥇</span><span class="txt">풀코스</span>
+          </div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="하프" onchange="applyFilter()">
+          <div class="chk-box">
+            <span class="icon">🥈</span><span class="txt">하프</span>
+          </div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="10km" onchange="applyFilter()">
+          <div class="chk-box">
+            <span class="icon">🏃</span><span class="txt">10km</span>
+          </div>
+        </label>
+        <label class="c-check">
+          <input type="checkbox" value="5km" onchange="applyFilter()">
+          <div class="chk-box">
+            <span class="icon">👟</span><span class="txt">5km</span>
+          </div>
+        </label>
+      </div>
+    </section>
 
-  <div style="margin-bottom: 15px; font-size: 14px;">
-    전체 대회 <span id="raceCount" style="color:#FF4B2B; font-weight:bold;">0</span>개
-  </div>
+    <section class="toggle-wrap">
+      <span>접수중인 대회만 보기</span>
+      <div id="openTog" class="toggle-switch" onclick="toggleOpen()"></div>
+    </section>
 
-  <div id="raceList">
-    데이터를 불러오는 중입니다...
-  </div>
+    <section>
+      <div class="list-header">
+        총 <strong id="raceCount">0</strong>개 대회
+      </div>
+      <div id="raceList">
+        <div style="text-align:center; padding: 40px; color: #666;">대회 정보를 불러오고 있습니다...</div>
+      </div>
+    </section>
+
+  </main>
 
 <script src="app.js"></script>
 <script>
-  // 1. 페이지가 열릴 때 로그인 상태인지 확인
+  // 1. 페이지 진입 시 로그인 세션 확인
   var sessionStatus = restoreSession();
 
-  // 2. 로그인이 안 되어 있다면 login.html로 강제 이동
   if (!sessionStatus) {
+    // 로그인이 안 되어있으면 로그인 창으로 강제 이동
     window.location.href = getBasePath() + 'login.html';
   } else {
-    // 3. 로그인이 되어 있다면, app.js의 loadRaces() 실행 후 목록 화면에 그리기
+    // 로그인이 되어있으면 app.js의 loadRaces() 실행하여 화면에 그림
     loadRaces().then(function(list) {
-      render(list); // 카드 UI 생성 함수
+      render(list);
     });
   }
 </script>
