@@ -6,9 +6,14 @@
     {
       "title": "2026 나는 솔로런 서울",
       "date": "2026-05-09",
-      "month": 5, "day": 9, "dow": "토",
-      "region": "서울", "location": "여의도공원 문화의마당",
-      "courses": ["10km"],
+      "month": 5,
+      "day": 9,
+      "dow": "토",
+      "region": "서울",
+      "location": "여의도공원 문화의마당",
+      "courses": [
+        "10km"
+      ],
       "reg_period": "2026.03.18 ~ 2026.04.15",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-naneun-solorun"
@@ -16,9 +21,16 @@
     {
       "title": "2026 제23회 보령머드임해마라톤",
       "date": "2026-05-09",
-      "month": 5, "day": 9, "dow": "토",
-      "region": "충남", "location": "대천해수욕장1지구 제2주차장",
-      "courses": ["하프", "10km", "5km"],
+      "month": 5,
+      "day": 9,
+      "dow": "토",
+      "region": "충남",
+      "location": "대천해수욕장1지구 제2주차장",
+      "courses": [
+        "하프",
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.02.23 ~ 2026.04.10",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-boryeong-mud-coastal-marathon"
@@ -26,9 +38,15 @@
     {
       "title": "커피 빵빵런 2026",
       "date": "2026-05-09",
-      "month": 5, "day": 9, "dow": "토",
-      "region": "강원", "location": "강릉 경포호수광장",
-      "courses": ["10km", "5km"],
+      "month": 5,
+      "day": 9,
+      "dow": "토",
+      "region": "강원",
+      "location": "강릉 경포호수광장",
+      "courses": [
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.02.10 ~ 2026.05.08",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/coffee-bangbangrun-2026-gangneung-5k-10k"
@@ -36,9 +54,17 @@
     {
       "title": "2026 BUSAN 50K",
       "date": "2026-05-09",
-      "month": 5, "day": 9, "dow": "토",
-      "region": "부산", "location": "신라대학교 대운동장",
-      "courses": ["50km", "37km", "24km", "12km"],
+      "month": 5,
+      "day": 9,
+      "dow": "토",
+      "region": "부산",
+      "location": "신라대학교 대운동장",
+      "courses": [
+        "50km",
+        "37km",
+        "24km",
+        "12km"
+      ],
       "reg_period": "2026.01.05 ~ 2026.02.03",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-busan-50k"
@@ -46,9 +72,15 @@
     {
       "title": "제19회 대전 한밭울트라마라톤",
       "date": "2026-05-09",
-      "month": 5, "day": 9, "dow": "토",
-      "region": "대전", "location": "대전 서구 둔산대로 169",
-      "courses": ["100km", "50km"],
+      "month": 5,
+      "day": 9,
+      "dow": "토",
+      "region": "대전",
+      "location": "대전 서구 둔산대로 169",
+      "courses": [
+        "100km",
+        "50km"
+      ],
       "reg_period": "2026.01.01 ~ 2026.04.26",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/19th-daejeon-hanbat-ultramarathon-2026"
@@ -56,9 +88,14 @@
     {
       "title": "윙스 포 라이프 월드런 2026",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "경기", "location": "부천종합운동장",
-      "courses": ["기부마라톤"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "경기",
+      "location": "부천종합운동장",
+      "courses": [
+        "기부마라톤"
+      ],
       "reg_period": "2026.01.01 ~ 2026.05.10",
       "status": "접수중",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/wings-for-life-world-run-2026-may10"
@@ -66,9 +103,14 @@
     {
       "title": "2026 선양마사이 마라톤",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "대전", "location": "장동산림욕장 계족산황톳길",
-      "courses": ["13km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "대전",
+      "location": "장동산림욕장 계족산황톳길",
+      "courses": [
+        "13km"
+      ],
       "reg_period": "2026.04.06 ~ 2026.04.30",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-senyang-masai-marathon-barefoot-festival"
@@ -76,9 +118,16 @@
     {
       "title": "제22회 3대하천마라톤",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "대전", "location": "대전엑스포시민광장",
-      "courses": ["하프", "10km", "5km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "대전",
+      "location": "대전엑스포시민광장",
+      "courses": [
+        "하프",
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.04.06 ~ 2026.04.10",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/22nd-three-rivers-marathon-2026"
@@ -86,9 +135,16 @@
     {
       "title": "2026 동해 스카이레이스",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "강원", "location": "동해 망상컨벤션센터 및 망상해수욕장",
-      "courses": ["풀", "하프", "11km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "강원",
+      "location": "동해 망상컨벤션센터 및 망상해수욕장",
+      "courses": [
+        "풀",
+        "하프",
+        "11km"
+      ],
       "reg_period": "2026.03.03 ~ 2026.04.30",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-donghae-sky-race"
@@ -96,9 +152,15 @@
     {
       "title": "2026 용인마라톤",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "경기", "location": "용인특례시청",
-      "courses": ["10km", "5km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "경기",
+      "location": "용인특례시청",
+      "courses": [
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.03.05 ~ 2026.04.09",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-yongin-marathon"
@@ -106,9 +168,16 @@
     {
       "title": "소아암환우돕기 제23회 서울시민마라톤",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "서울", "location": "여의도 한강 물빛광장",
-      "courses": ["하프", "10km", "5km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "서울",
+      "location": "여의도 한강 물빛광장",
+      "courses": [
+        "하프",
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.01.05 ~ 2026.04.10",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/seoul-citizen-marathon-23-child-cancer-charity-2026-05-10"
@@ -116,9 +185,14 @@
     {
       "title": "2026 무의도구석구석 국제트레일런",
       "date": "2026-05-10",
-      "month": 5, "day": 10, "dow": "일",
-      "region": "경기", "location": "하나개해수욕장",
-      "courses": ["12km"],
+      "month": 5,
+      "day": 10,
+      "dow": "일",
+      "region": "경기",
+      "location": "하나개해수욕장",
+      "courses": [
+        "12km"
+      ],
       "reg_period": "2025.12.16 ~ 2025.04.20",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-muui-island-international-trail-run"
@@ -126,9 +200,16 @@
     {
       "title": "2026 연구단지 생물다양성 마라톤 '다다다런'",
       "date": "2026-05-16",
-      "month": 5, "day": 16, "dow": "토",
-      "region": "대전", "location": "국립중앙과학관 및 갑천변 일대",
-      "courses": ["하프", "10km", "5km"],
+      "month": 5,
+      "day": 16,
+      "dow": "토",
+      "region": "대전",
+      "location": "국립중앙과학관 및 갑천변 일대",
+      "courses": [
+        "하프",
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.04.15 ~ 2026.05.06",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-research-institute-biological-diversity-marathon-daddadarun"
@@ -136,9 +217,15 @@
     {
       "title": "시골스런 - 양주 꿀런",
       "date": "2026-05-16",
-      "month": 5, "day": 16, "dow": "토",
-      "region": "경기", "location": "경기도 양주 나리농원",
-      "courses": ["5km", "3km"],
+      "month": 5,
+      "day": 16,
+      "dow": "토",
+      "region": "경기",
+      "location": "경기도 양주 나리농원",
+      "courses": [
+        "5km",
+        "3km"
+      ],
       "reg_period": "2026.04.02 ~ 2026.05.08",
       "status": "마감",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/sigorserun-yangju-honey-run"
@@ -146,9 +233,16 @@
     {
       "title": "2026 춘천마라톤",
       "date": "2026-06-07",
-      "month": 6, "day": 7, "dow": "일",
-      "region": "강원", "location": "춘천종합운동장",
-      "courses": ["풀", "하프", "10km"],
+      "month": 6,
+      "day": 7,
+      "dow": "일",
+      "region": "강원",
+      "location": "춘천종합운동장",
+      "courses": [
+        "풀",
+        "하프",
+        "10km"
+      ],
       "reg_period": "2026.03.01 ~ 2026.05.31",
       "status": "접수중",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-chuncheon-marathon"
@@ -156,9 +250,15 @@
     {
       "title": "2026 서울 야간 하프마라톤",
       "date": "2026-06-13",
-      "month": 6, "day": 13, "dow": "토",
-      "region": "서울", "location": "잠실종합운동장",
-      "courses": ["하프", "10km"],
+      "month": 6,
+      "day": 13,
+      "dow": "토",
+      "region": "서울",
+      "location": "잠실종합운동장",
+      "courses": [
+        "하프",
+        "10km"
+      ],
       "reg_period": "2026.04.01 ~ 2026.06.01",
       "status": "접수중",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-seoul-night-half-marathon"
@@ -166,9 +266,17 @@
     {
       "title": "2026 제주 국제 마라톤",
       "date": "2026-06-21",
-      "month": 6, "day": 21, "dow": "일",
-      "region": "제주", "location": "제주월드컵경기장",
-      "courses": ["풀", "하프", "10km", "5km"],
+      "month": 6,
+      "day": 21,
+      "dow": "일",
+      "region": "제주",
+      "location": "제주월드컵경기장",
+      "courses": [
+        "풀",
+        "하프",
+        "10km",
+        "5km"
+      ],
       "reg_period": "2026.03.15 ~ 2026.06.10",
       "status": "접수중",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-jeju-international-marathon"
@@ -176,9 +284,15 @@
     {
       "title": "2026 대구 국제마라톤",
       "date": "2026-09-13",
-      "month": 9, "day": 13, "dow": "일",
-      "region": "대구", "location": "대구스타디움",
-      "courses": ["풀", "하프"],
+      "month": 9,
+      "day": 13,
+      "dow": "일",
+      "region": "대구",
+      "location": "대구스타디움",
+      "courses": [
+        "풀",
+        "하프"
+      ],
       "reg_period": "2026.05.01 ~ 2026.08.20",
       "status": "접수중",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-daegu-international-marathon"
@@ -186,9 +300,15 @@
     {
       "title": "2026 JTBC 서울마라톤",
       "date": "2026-10-18",
-      "month": 10, "day": 18, "dow": "일",
-      "region": "서울", "location": "잠실종합운동장",
-      "courses": ["풀", "하프"],
+      "month": 10,
+      "day": 18,
+      "dow": "일",
+      "region": "서울",
+      "location": "잠실종합운동장",
+      "courses": [
+        "풀",
+        "하프"
+      ],
       "reg_period": "2026.06.01 ~ 2026.09.01",
       "status": "접수전",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-jtbc-seoul-marathon"
@@ -196,9 +316,15 @@
     {
       "title": "제41회 춘천마라톤",
       "date": "2026-10-25",
-      "month": 10, "day": 25, "dow": "일",
-      "region": "강원", "location": "춘천종합운동장",
-      "courses": ["풀", "하프"],
+      "month": 10,
+      "day": 25,
+      "dow": "일",
+      "region": "강원",
+      "location": "춘천종합운동장",
+      "courses": [
+        "풀",
+        "하프"
+      ],
       "reg_period": "2026.06.01 ~ 2026.09.15",
       "status": "접수전",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-41th-chuncheon-marathon"
@@ -206,9 +332,16 @@
     {
       "title": "2026 서울마라톤 (동아)",
       "date": "2026-11-08",
-      "month": 11, "day": 8, "dow": "일",
-      "region": "서울", "location": "광화문광장",
-      "courses": ["풀", "하프", "10km"],
+      "month": 11,
+      "day": 8,
+      "dow": "일",
+      "region": "서울",
+      "location": "광화문광장",
+      "courses": [
+        "풀",
+        "하프",
+        "10km"
+      ],
       "reg_period": "2026.07.01 ~ 2026.10.01",
       "status": "접수전",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-seoul-marathon-donga"
@@ -216,9 +349,16 @@
     {
       "title": "2026 제32회 중앙서울마라톤",
       "date": "2026-11-15",
-      "month": 11, "day": 15, "dow": "일",
-      "region": "서울", "location": "광화문광장",
-      "courses": ["풀", "하프", "10km"],
+      "month": 11,
+      "day": 15,
+      "dow": "일",
+      "region": "서울",
+      "location": "광화문광장",
+      "courses": [
+        "풀",
+        "하프",
+        "10km"
+      ],
       "reg_period": "2026.07.15 ~ 2026.10.20",
       "status": "접수전",
       "detail_url": "https://marathongo.co.kr/raceDetail/domestic/2026-32nd-joongang-seoul-marathon"
