@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>런뉴 - 마라톤 & 러닝 대회</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #161619;
+    --surface2: #1e1e23;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f2;
+    --text-muted: #7a7a8a;
+    --accent: #e8f000;
+    --accent2: #ff4d2e;
+    --accent3: #00c9a7;
+    --radius: 16px;
+    --tab-h: 60px;
+  }
+
+  html, body {
+    height: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  /* ── Phone Shell ── */
+  #phone {
+    width: 390px;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; font-size: 12px; }
+
+  /* ── Screens ── */
+  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen.active { display: flex; }
+
+  /* ── Tab Bar ── */
+  .tab-bar {
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    height: var(--tab-h);
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 10px;
+    cursor: pointer;
+    transition: color .2s;
+  }
+  .tab-btn.active { color: var(--accent); }
+  .tab-btn svg { width: 22px; height: 22px; }
+
+  /* ══════════════════════════════
+     SCREEN 1 · 대회 목록
+  ══════════════════════════════ */
+  #screen-list { background: var(--bg); }
+
+  /* Hero */
+  .list-hero {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .list-hero img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(.55);
+  }
+  .list-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 30%, var(--bg) 100%);
+  }
+  .list-hero-content {
+    position: absolute;
+    bottom: 20px; left: 20px; right: 20px;
+  }
+  .list-hero-content h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 2px;
+    color: #fff;
+    line-height: 1;
+  }
+  .list-hero-content h1 span { color: var(--accent); }
+  .hero-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,.6);
+    margin-top: 4px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Filter chips */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .chip.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Sort row */
+  .sort-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 16px 10px;
+    flex-shrink: 0;
+  }
+  .sort-label { font-size: 12px; color: var(--text-muted); }
+  .sort-label strong { color: var(--text); }
+  .sort-btn {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  /* Race list */
+  .race-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+  .race-list::-webkit-scrollbar { display: none; }
+
+  /* Race card */
+  .race-card {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .race-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 3px 0 0 3px;
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .race-card:active { transform: scale(.98); }
+  .race-card:active::before { opacity: 1; }
+
+  .race-date-box {
+    flex-shrink: 0;
+    width: 48px;
+    text-align: center;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 8px 4px;
+    border: 1px solid var(--border);
+  }
+  .race-date-box .month {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .race-date-box .day {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .race-date-box .dow {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .race-info { flex: 1; min-width: 0; }
+  .race-badges { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: .5px;
+  }
+  .badge-full { background: rgba(232,240,0,.15); color: var(--accent); border: 1px solid rgba(232,240,0,.3); }
+  .badge-half { background: rgba(0,201,167,.15); color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
+  .badge-10k { background: rgba(255,77,46,.15); color: var(--accent2); border: 1px solid rgba(255,77,46,.3); }
+  .badge-trail { background: rgba(120,100,255,.15); color: #a88fff; border: 1px solid rgba(120,100,255,.3); }
+  .badge-new { background: var(--accent2); color: #fff; }
+
+  .race-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .race-meta {
+    display: flex;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .race-meta span { display: flex; align-items: center; gap: 3px; }
+
+  .race-right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .d-day {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+  .d-day.open { background: rgba(232,240,0,.15); color: var(--accent); }
+  .d-day.close { background: var(--surface2); color: var(--text-muted); }
+  .d-day.soon { background: rgba(255,77,46,.15); color: var(--accent2); }
+
+  .participants-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .participants-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    border-radius: 2px;
+  }
+  .participants-text {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    text-align: right;
+  }
+
+  /* ══════════════════════════════
+     SCREEN 2 · 대회 상세
+  ══════════════════════════════ */
+  #screen-detail { background: var(--bg); }
+
+  .detail-scroll { flex: 1; overflow-y: auto; }
+  .detail-scroll::-webkit-scrollbar { display: none; }
+
+  /* Detail hero */
+  .detail-hero {
+    position: relative;
+    height: 240px;
+    overflow: hidden;
+  }
+  .detail-hero img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: brightness(.6);
+  }
+  .detail-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, var(--bg) 100%);
+  }
+  .detail-back {
+    position: absolute;
+    top: 16px; left: 16px;
+    width: 36px; height: 36px;
+    background: rgba(0,0,0,.5);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .detail-wishlist {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    background: rgba(0,0,0,.5);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+
+  .detail-hero-content {
+    position: absolute;
+    bottom: 20px; left: 20px; right: 20px;
+  }
+  .detail-hero-content h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    text-shadow: 0 2px 12px rgba(0,0,0,.5);
+  }
+
+  /* Detail body */
+  .detail-body { padding: 20px; }
+
+  /* Course tabs */
+  .course-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .course-tab {
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .course-tab.active { background: var(--accent); color: #000; }
+  .course-tab:not(.active) { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* Info grid */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .info-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .info-item .label {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .info-item .value {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .info-item .value small {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+  .info-item.accent-border { border-color: rgba(232,240,0,.3); }
+
+  /* Section */
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Timeline */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item {
+    display: flex;
+    gap: 14px;
+    padding-bottom: 16px;
+    position: relative;
+  }
+  .tl-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 16px; top: 30px; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+  .tl-dot {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .tl-dot.done { background: rgba(232,240,0,.15); border-color: rgba(232,240,0,.4); }
+  .tl-content .tl-date { font-size: 12px; color: var(--text-muted); margin-bottom: 2px; }
+  .tl-content .tl-label { font-size: 14px; font-weight: 600; color: var(--text); }
+
+  /* Course badges large */
+  .course-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .course-badge-lg {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .course-badge-lg.f { background: rgba(232,240,0,.15); color: var(--accent); border: 1px solid rgba(232,240,0,.3); }
+  .course-badge-lg.h { background: rgba(0,201,167,.15); color: var(--accent3); border: 1px solid rgba(0,201,167,.3); }
+  .course-badge-lg.t { background: rgba(120,100,255,.15); color: #a88fff; border: 1px solid rgba(120,100,255,.3); }
+
+  /* Contact */
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    text-decoration: none;
+  }
+  .contact-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .contact-text { font-size: 13px; color: var(--text); font-weight: 500; }
+
+  /* Description box */
+  .desc-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(240,240,242,.75);
+  }
+  .desc-box p { margin-bottom: 10px; }
+  .desc-box p:last-child { margin-bottom: 0; }
+  .desc-highlight {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .desc-highlight .icon { flex-shrink: 0; margin-top: 1px; }
+
+  /* CTA bar */
+  .cta-bar {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 20px 24px;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .cta-share {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .cta-register {
+    flex: 1;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--accent);
+    border: none;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    transition: all .2s;
+  }
+  .cta-register:active { transform: scale(.97); }
+
+  /* ══════════════════════════════
+     SCREEN 3 · 지도 / 일정
+  ══════════════════════════════ */
+  #screen-calendar { background: var(--bg); }
+
+  .cal-header {
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+  .cal-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .cal-header h2 span { color: var(--accent); }
+
+  .cal-month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 12px;
+    flex-shrink: 0;
+  }
+  .cal-month-nav button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  .cal-month-nav .month-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+  .cal-dow {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    font-weight: 600;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+  }
+  .cal-day.current-month { color: var(--text); }
+  .cal-day.today {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .cal-day .race-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: absolute;
+    bottom: 3px;
+  }
+  .cal-day .race-dot.red { background: var(--accent2); }
+
+  .upcoming-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+  }
+  .upcoming-list::-webkit-scrollbar { display: none; }
+
+  .upcoming-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .upcoming-stripe {
+    width: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .upcoming-stripe.yellow { background: var(--accent); }
+  .upcoming-stripe.red { background: var(--accent2); }
+  .upcoming-stripe.teal { background: var(--accent3); }
+  .upcoming-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .upcoming-meta { font-size: 11px; color: var(--text-muted); }
+
+  /* ══════════════════════════════
+     SCREEN 4 · 마이페이지
+  ══════════════════════════════ */
+  #screen-my { background: var(--bg); overflow-y: auto; }
+
+  .my-scroll { flex: 1; overflow-y: auto; }
+  .my-scroll::-webkit-scrollbar { display: none; }
+
+  .my-profile {
+    padding: 24px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 64px; height: 64px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #000;
+    flex-shrink: 0;
+  }
+  .profile-info .name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .profile-info .email {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .profile-info .level {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    background: rgba(232,240,0,.15);
+    border: 1px solid rgba(232,240,0,.3);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 0 20px 20px;
+    flex-shrink: 0;
+  }
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-unit { font-size: 12px; color: var(--accent); font-weight: 700; }
+  .stat-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+  .my-section { padding: 0 20px 20px; flex-shrink: 0; }
+  .my-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  .my-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .my-menu-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .my-menu-label { flex: 1; font-size: 14px; font-weight: 600; color: var(--text); }
+  .my-menu-arrow { color: var(--text-muted); font-size: 16px; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen.active .race-card,
+  .screen.active .info-item,
+  .screen.active .detail-body > * {
+    animation: fadeUp .35s ease both;
+  }
+  .race-card:nth-child(1) { animation-delay: 0ms; }
+  .race-card:nth-child(2) { animation-delay: 50ms; }
+  .race-card:nth-child(3) { animation-delay: 100ms; }
+  .race-card:nth-child(4) { animation-delay: 150ms; }
+  .race-card:nth-child(5) { animation-delay: 200ms; }
+  .race-card:nth-child(6) { animation-delay: 250ms; }
+
+  @media (max-width: 420px) {
+    #phone { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div class="status-bar">
+    <span>9:30</span>
+    <div class="status-icons">
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4" y="2" width="3" height="10" rx="1"/><rect x="8" y="0" width="3" height="12" rx="1"/><rect x="12" y="0" width="3" height="12" rx="1" opacity=".3"/></svg>
+      <svg width="16" height="12" viewBox="0 0 24 12" fill="currentColor"><path d="M1 4C5.5.5 18.5.5 23 4M4.5 7.5C7.5 5 16.5 5 19.5 7.5M8 11c2-1.5 6-1.5 8 0M12 14v.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <span style="font-size:11px;font-weight:700;">87%</span>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 1: 목록 ══ -->
+  <div class="screen active" id="screen-list">
+    <div class="list-hero">
+      <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80" alt="마라톤">
+      <div class="list-hero-overlay"></div>
+      <div class="list-hero-content">
+        <h1>RUN <span>NOW</span></h1>
+        <div class="hero-sub">국내 · 해외 런닝화 페이스 계산</div>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="chip active">전체</div>
+      <div class="chip">마라톤</div>
+      <div class="chip">하프</div>
+      <div class="chip">10K</div>
+      <div class="chip">5K</div>
+      <div class="chip">트레일</div>
+      <div class="chip">인제</div>
+      <div class="chip">경기</div>
+      <div class="chip">서울</div>
+    </div>
+
+    <div class="sort-row">
+      <span class="sort-label">대회 목록 <strong>총 128개</strong></span>
+      <button class="sort-btn">날짜순 ▾</button>
+    </div>
+
+    <div class="race-list">
+      <!-- 카드 1 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">3</div>
+          <div class="dow">목</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-trail">TRAIL</span>
+            <span class="badge badge-new">NEW</span>
+          </div>
+          <div class="race-title">2026 장수트레일레이스 Spring</div>
+          <div class="race-meta">
+            <span>📍 전북 장수</span>
+            <span>70K · 38K · 20K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day open">접수중</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:72%"></div></div>
+            <div class="participants-text">72%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 2 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">5</div>
+          <div class="dow">일</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-full">FULL</span>
+            <span class="badge badge-half">HALF</span>
+          </div>
+          <div class="race-title">수원 공굴산마라톤</div>
+          <div class="race-meta">
+            <span>📍 경기 수원</span>
+            <span>42K · 21K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day soon">D-3</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:91%"></div></div>
+            <div class="participants-text">91%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 3 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">6</div>
+          <div class="dow">월</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-full">FULL</span>
+            <span class="badge badge-10k">10K</span>
+          </div>
+          <div class="race-title">오크밸리 봄 스나트 레이스</div>
+          <div class="race-meta">
+            <span>📍 강원 원주</span>
+            <span>42K · 10K · 5K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day open">접수중</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:45%"></div></div>
+            <div class="participants-text">45%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 4 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">12</div>
+          <div class="dow">일</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-full">FULL</span>
+            <span class="badge badge-half">HALF</span>
+            <span class="badge badge-10k">10K</span>
+          </div>
+          <div class="race-title">2026 글로벌 건양대학교 K-국제 마라톤</div>
+          <div class="race-meta">
+            <span>📍 충남 논산</span>
+            <span>42K · 21K · 10K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day open">접수중</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:58%"></div></div>
+            <div class="participants-text">58%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 5 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">19</div>
+          <div class="dow">일</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-full">FULL</span>
+          </div>
+          <div class="race-title">제17회 전국경제마라톤</div>
+          <div class="race-meta">
+            <span>📍 서울 여의도</span>
+            <span>42K · 21K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day close">마감</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:100%"></div></div>
+            <div class="participants-text">마감</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 6 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">25</div>
+          <div class="dow">토</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-trail">TRAIL</span>
+          </div>
+          <div class="race-title">'SAFE KOREA' 제17회 대한경제마라톤대회</div>
+          <div class="race-meta">
+            <span>📍 경남 합천</span>
+            <span>50K · 30K · 20K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day open">접수중</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:33%"></div></div>
+            <div class="participants-text">33%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카드 7 -->
+      <div class="race-card" onclick="showDetail()">
+        <div class="race-date-box">
+          <div class="month">APR</div>
+          <div class="day">25</div>
+          <div class="dow">토</div>
+        </div>
+        <div class="race-info">
+          <div class="race-badges">
+            <span class="badge badge-half">HALF</span>
+            <span class="badge badge-10k">10K</span>
+          </div>
+          <div class="race-title">2026 양인의 봄 양양철쭉마라톤</div>
+          <div class="race-meta">
+            <span>📍 강원 양양</span>
+            <span>21K · 10K · 5K</span>
+          </div>
+        </div>
+        <div class="race-right">
+          <div class="d-day open">접수중</div>
+          <div>
+            <div class="participants-bar"><div class="participants-fill" style="width:60%"></div></div>
+            <div class="participants-text">60%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 2: 상세 ══ -->
+  <div class="screen" id="screen-detail">
+    <div class="detail-scroll">
+      <div class="detail-hero">
+        <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="레이스">
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-back" onclick="showList()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <div class="detail-wishlist" id="wishBtn" onclick="toggleWish()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" id="wishIcon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="detail-hero-content">
+          <h2>2026 장수트레일레이스 Spring</h2>
+        </div>
+      </div>
+
+      <div class="detail-body">
+        <div class="course-badges">
+          <span class="course-badge-lg f">70K</span>
+          <span class="course-badge-lg f">38K</span>
+          <span class="course-badge-lg h">20K</span>
+          <span class="course-badge-lg t">VK Kids</span>
+        </div>
+
+        <div class="course-tabs">
+          <button class="course-tab active">신청하기</button>
+          <button class="course-tab">공유하기</button>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">📍 장소</div>
+            <div class="value">전북 장수 <small>장수황계경기장</small></div>
+          </div>
+          <div class="info-item accent-border">
+            <div class="label">📅 대회일</div>
+            <div class="value">2026-04-03 <small>목요일</small></div>
+          </div>
+          <div class="info-item">
+            <div class="label">⏰ 출발시간</div>
+            <div class="value">07:00 <small>AM</small></div>
+          </div>
+          <div class="info-item">
+            <div class="label">👟 참가비</div>
+            <div class="value">70K <small>80,000원~</small></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">접수 일정</div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot done">✓</div>
+              <div class="tl-content">
+                <div class="tl-date">2026.01.02</div>
+                <div class="tl-label">접수 시작</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot done">✓</div>
+              <div class="tl-content">
+                <div class="tl-date">2026.01.15</div>
+                <div class="tl-label">얼리버드 마감 (10% 할인)</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot" style="border-color:rgba(232,240,0,.4);color:var(--accent);">→</div>
+              <div class="tl-content">
+                <div class="tl-date">2026.02.14 · <span style="color:var(--accent);font-weight:700;">D-50</span></div>
+                <div class="tl-label">최종 접수 마감</div>
+              </div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot">🏁</div>
+              <div class="tl-content">
+                <div class="tl-date">2026.04.03</div>
+                <div class="tl-label">대회 당일</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">대회 소개</div>
+          <div class="desc-box">
+            <div class="desc-highlight">
+              <span class="icon">🏔️</span>
+              <div>노스페이스와 함께하는 2026 장수트레일레이스 Spring의 참가 접수 일정을 안내합니다.</div>
+            </div>
+            <div class="desc-highlight">
+              <span class="icon">📋</span>
+              <div><strong style="color:var(--accent);">RACE INFO</strong><br>일자: 2026.04.03 (목) ~ 05(금)<br>코스: 70K / 38K / 20K / VK / Kids<br>장소: 도보공원 3칸 및 장수군 일원 일대<br>참가기간: 2026.01.02(금) 14:00 OPEN</div>
+            </div>
+            <div class="desc-highlight">
+              <span class="icon">🌟</span>
+              <div>참가가 첫 선착을 넣는 순간 즐거이 즐거움을 추가해 드립니다. 가져오는 분, 러너한테 도움을 드리겠습니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">문의</div>
+          <a class="contact-row" href="#">
+            <div class="contact-icon">✉️</div>
+            <div class="contact-text">info@trailrunner.kr</div>
+          </a>
+          <a class="contact-row" href="#">
+            <div class="contact-icon">📞</div>
+            <div class="contact-text">063-353-2025</div>
+          </a>
+          <a class="contact-row" href="#">
+            <div class="contact-icon">🌐</div>
+            <div class="contact-text">trailrunner.kr</div>
+          </a>
+        </div>
+
+        <div style="height:80px;"></div>
+      </div>
+    </div>
+    <div class="cta-bar">
+      <div class="cta-share">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      </div>
+      <button class="cta-register">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        대회 신청하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 3: 캘린더 ══ -->
+  <div class="screen" id="screen-calendar">
+    <div class="cal-header">
+      <h2>대회 <span>캘린더</span></h2>
+    </div>
+    <div class="cal-month-nav">
+      <button>‹</button>
+      <span class="month-label">2026년 4월</span>
+      <button>›</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="upcoming-list">
+      <div class="sort-label" style="margin-bottom:10px;"><strong style="color:var(--text);">4월 대회 일정</strong></div>
+      <div class="upcoming-item" onclick="showDetail()">
+        <div class="upcoming-stripe yellow"></div>
+        <div>
+          <div class="upcoming-title">2026 장수트레일레이스 Spring</div>
+          <div class="upcoming-meta">4월 3일 · 전북 장수 · 70K/38K/20K</div>
+        </div>
+      </div>
+      <div class="upcoming-item" onclick="showDetail()">
+        <div class="upcoming-stripe red"></div>
+        <div>
+          <div class="upcoming-title">수원 공굴산마라톤</div>
+          <div class="upcoming-meta">4월 5일 · 경기 수원 · 42K/21K</div>
+        </div>
+      </div>
+      <div class="upcoming-item" onclick="showDetail()">
+        <div class="upcoming-stripe yellow"></div>
+        <div>
+          <div class="upcoming-title">오크밸리 봄 스나트 레이스</div>
+          <div class="upcoming-meta">4월 6일 · 강원 원주 · 42K/10K/5K</div>
+        </div>
+      </div>
+      <div class="upcoming-item" onclick="showDetail()">
+        <div class="upcoming-stripe teal"></div>
+        <div>
+          <div class="upcoming-title">2026 글로벌 건양대학교 K-국제 마라톤</div>
+          <div class="upcoming-meta">4월 12일 · 충남 논산 · 42K/21K/10K</div>
+        </div>
+      </div>
+      <div class="upcoming-item" onclick="showDetail()">
+        <div class="upcoming-stripe red"></div>
+        <div>
+          <div class="upcoming-title">양인의 봄 양양철쭉마라톤</div>
+          <div class="upcoming-meta">4월 25일 · 강원 양양 · 21K/10K</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 4: 마이 ══ -->
+  <div class="screen" id="screen-my">
+    <div class="my-scroll">
+      <div class="my-profile">
+        <div class="avatar">RK</div>
+        <div class="profile-info">
+          <div class="name">런뉴 러너</div>
+          <div class="email">runner@runnu.kr</div>
+          <div class="level">⚡ 마라토너 Lv.4</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num">23<span class="stat-unit">회</span></div>
+          <div class="stat-label">완주 대회</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">847<span class="stat-unit">km</span></div>
+          <div class="stat-label">누적 거리</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">3<span class="stat-unit">시간</span></div>
+          <div class="stat-label">베스트 기록</div>
+        </div>
+      </div>
+
+      <div class="my-section">
+        <div class="my-section-title">내 대회</div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">🏃</div>
+          <div class="my-menu-label">신청한 대회</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">❤️</div>
+          <div class="my-menu-label">찜한 대회</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">🏆</div>
+          <div class="my-menu-label">완주 기록</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="my-section">
+        <div class="my-section-title">설정</div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">🔔</div>
+          <div class="my-menu-label">알림 설정</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">👤</div>
+          <div class="my-menu-label">프로필 편집</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+        <div class="my-menu-item">
+          <div class="my-menu-icon">⚙️</div>
+          <div class="my-menu-label">앱 설정</div>
+          <div class="my-menu-arrow">›</div>
+        </div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- ══ Tab Bar ══ -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-list" onclick="switchTab('list')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      대회목록
+    </button>
+    <button class="tab-btn" id="tab-calendar" onclick="switchTab('calendar')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      캘린더
+    </button>
+    <button class="tab-btn" id="tab-my" onclick="switchTab('my')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      마이
+    </button>
+  </div>
+</div>
+
+<script>
+  // ── Tab switching ──
+  const screens = { list: 'screen-list', calendar: 'screen-calendar', my: 'screen-my' };
+  let currentTab = 'list';
+
+  function switchTab(tab) {
+    document.getElementById('screen-' + currentTab).classList.remove('active');
+    document.getElementById('tab-' + currentTab).classList.remove('active');
+    document.getElementById('screen-detail').classList.remove('active');
+
+    currentTab = tab;
+    document.getElementById('screen-' + tab).classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  function showDetail() {
+    document.getElementById('screen-list').classList.remove('active');
+    document.getElementById('screen-calendar').classList.remove('active');
+    document.getElementById('screen-detail').classList.add('active');
+    // hide tabs
+    document.querySelector('.tab-bar').style.display = 'none';
+  }
+
+  function showList() {
+    document.getElementById('screen-detail').classList.remove('active');
+    document.getElementById('screen-' + currentTab).classList.add('active');
+    document.querySelector('.tab-bar').style.display = 'flex';
+  }
+
+  // ── Wishlist toggle ──
+  let wished = false;
+  function toggleWish() {
+    wished = !wished;
+    const icon = document.getElementById('wishIcon');
+    icon.setAttribute('fill', wished ? '#ff4d2e' : 'none');
+    icon.setAttribute('stroke', wished ? '#ff4d2e' : 'white');
+  }
+
+  // ── Calendar ──
+  function buildCalendar() {
+    const grid = document.getElementById('calGrid');
+    const dows = ['일','월','화','수','목','금','토'];
+    const raceDays = [3, 5, 6, 12, 19, 25];
+    const redDays = [5, 19];
+
+    dows.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-dow';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+
+    // April 2026 starts on Wednesday (index 3)
+    for (let i = 0; i < 3; i++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day';
+      grid.appendChild(el);
+    }
+
+    for (let d = 1; d <= 30; d++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day current-month';
+      if (d === 3) el.classList.add('today');
+      el.innerHTML = d;
+      if (raceDays.includes(d)) {
+        const dot = document.createElement('div');
+        dot.className = 'race-dot' + (redDays.includes(d) ? ' red' : '');
+        el.appendChild(dot);
+      }
+      grid.appendChild(el);
+    }
+  }
+
+  buildCalendar();
+
+  // ── Chip filter ──
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // ── Course tabs ──
+  document.querySelectorAll('.course-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.course-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
