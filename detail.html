@@ -6,7 +6,6 @@
 <title>런뉴 — 대회 상세</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* ── 상세 전용 스타일 ── */
   .d-scroll { flex: 1; overflow-y: auto; }
   .d-scroll::-webkit-scrollbar { display: none; }
 
@@ -64,7 +63,9 @@
   .info-lbl {
     font-size: 10px; color: var(--muted); font-weight: 600;
     text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
   }
+  .info-lbl svg { opacity: .6; flex-shrink: 0; }
   .info-val { font-size: 13px; color: var(--text); font-weight: 700; line-height: 1.5; }
 
   /* 섹션 */
@@ -76,19 +77,25 @@
   }
   .d-sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* 링크 행 */
+  /* 링크 행 — 깔끔하게 정제 */
   .link-row {
-    display: flex; align-items: center; gap: 10px; padding: 13px;
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; cursor: pointer; transition: border-color .2s;
     text-decoration: none;
   }
   .link-row:active { border-color: var(--accent); }
   .link-icon {
-    width: 34px; height: 34px; border-radius: 10px; background: var(--surface2);
-    display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 10px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
-  .link-text { font-size: 13px; color: var(--text); font-weight: 500; }
+  .link-body { flex: 1; min-width: 0; }
+  .link-label { font-size: 13px; color: var(--text); font-weight: 700; margin-bottom: 2px; }
+  .link-url {
+    font-size: 11px; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .link-arrow { flex-shrink: 0; color: var(--muted); }
 
   /* CTA 바 */
   .cta-bar {
@@ -146,19 +153,31 @@
       <!-- 정보 그리드 -->
       <div class="info-grid">
         <div class="info-box">
-          <div class="info-lbl">📍 장소</div>
+          <div class="info-lbl">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            장소
+          </div>
           <div class="info-val" id="dLocation">–</div>
         </div>
         <div class="info-box hi">
-          <div class="info-lbl">📅 대회일</div>
+          <div class="info-lbl">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            대회일
+          </div>
           <div class="info-val" id="dDate">–</div>
         </div>
         <div class="info-box">
-          <div class="info-lbl">📋 접수 기간</div>
+          <div class="info-lbl">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            접수 기간
+          </div>
           <div class="info-val" id="dReg" style="font-size:11px;line-height:1.6">–</div>
         </div>
         <div class="info-box">
-          <div class="info-lbl">🏁 접수 상태</div>
+          <div class="info-lbl">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            접수 상태
+          </div>
           <div class="info-val" id="dStatus">–</div>
         </div>
       </div>
@@ -167,26 +186,39 @@
       <div class="d-section">
         <div class="d-sec-title">공식 링크</div>
         <a class="link-row" id="dLinkRow" href="#" target="_blank" rel="noopener">
-          <div class="link-icon">🌐</div>
-          <div class="link-text" id="dLinkText">marathongo.co.kr</div>
+          <div class="link-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+          <div class="link-body">
+            <div class="link-label">공식 홈페이지 바로가기</div>
+            <div class="link-url" id="dLinkUrl">–</div>
+          </div>
+          <div class="link-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
         </a>
       </div>
 
     </div>
     <div style="height:90px"></div>
-  </div><!-- /d-scroll -->
+  </div>
 
   <!-- CTA 바 -->
   <div class="cta-bar">
     <div class="cta-share" id="shareBtn" onclick="onShare()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--sub)" stroke-width="2">
         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
         <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
         <line x1="15.41" y1="6.51"  x2="8.59"  y2="10.49"/>
       </svg>
     </div>
     <button class="cta-reg" id="ctaBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <path d="M5 12h14M12 5l7 7-7 7"/>
       </svg>
       대회 신청하기
@@ -198,28 +230,21 @@
 <script src="app.js"></script>
 <script>
   let race = null;
-
-  /* ── URL 파라미터에서 인덱스 읽기 ── */
   const idx = parseInt(new URLSearchParams(location.search).get('i'));
 
-  /* ── 찜 아이콘 업데이트 ── */
   function updateWishIcon(wished) {
     document.getElementById('wishIcon').setAttribute('fill',   wished ? '#ff4d2e' : 'none');
     document.getElementById('wishIcon').setAttribute('stroke', wished ? '#ff4d2e' : 'white');
   }
 
-  /* ── 찜 버튼 클릭 ── */
   function onToggleWish() {
     if (!race) return;
     const wished = toggleWish(race.title);
     updateWishIcon(wished);
-    document.getElementById('wishCount') && (document.getElementById('wishCount').textContent = getWishCount());
   }
 
-  /* ── 공유 버튼 ── */
   function onShare() { if (race) shareRace(race); }
 
-  /* ── 코스 배지 타입 ── */
   function dcClass(c) {
     const l = c.toLowerCase();
     if (l.includes('100')||l.includes('70')||l.includes('50')) return 'dc-ultra';
@@ -229,7 +254,6 @@
     return 'dc-short';
   }
 
-  /* ── 상태 색상 ── */
   const STATUS_COLOR = {
     '접수중': 'var(--accent)',
     '마감':   'var(--muted)',
@@ -237,7 +261,16 @@
     '종료':   'var(--muted)'
   };
 
-  /* ── 초기화 ── */
+  /* URL을 사람이 읽기 쉬운 도메인명으로 변환 */
+  function friendlyDomain(url) {
+    try {
+      const host = new URL(url).hostname.replace('www.', '');
+      return host;
+    } catch {
+      return url;
+    }
+  }
+
   (async () => {
     restoreSession();
     const races = await loadRaces();
@@ -250,46 +283,46 @@
     race = races[idx];
     const r = race;
 
-    /* 페이지 타이틀 */
     document.title = `런뉴 — ${r.title}`;
-
-    /* 히어로 */
     document.getElementById('dTitle').textContent = r.title;
 
-    /* 코스 배지 */
     document.getElementById('dCourses').innerHTML =
       (r.courses||[]).map(c => `<span class="dc ${dcClass(c)}">${c}</span>`).join('');
 
-    /* 정보 박스 */
     document.getElementById('dLocation').textContent = (r.region||'') + ' ' + (r.location||'');
     document.getElementById('dDate').textContent     = r.date + ' (' + r.dow + ')';
     document.getElementById('dReg').textContent      = r.reg_period || '–';
 
     const statusEl = document.getElementById('dStatus');
-    statusEl.textContent  = r.status || '–';
-    statusEl.style.color  = STATUS_COLOR[r.status] || 'var(--text)';
+    statusEl.textContent = r.status || '–';
+    statusEl.style.color = STATUS_COLOR[r.status] || 'var(--text)';
 
-    /* 링크 */
-    const linkRow  = document.getElementById('dLinkRow');
-    const linkText = document.getElementById('dLinkText');
+    /* 링크 — 도메인만 서브텍스트로 */
+    const linkRow = document.getElementById('dLinkRow');
+    const linkUrl = document.getElementById('dLinkUrl');
     if (r.detail_url) {
-      linkRow.href       = r.detail_url;
-      linkText.textContent = r.detail_url.replace('https://','');
+      linkRow.href = r.detail_url;
+      linkUrl.textContent = friendlyDomain(r.detail_url);
+    } else {
+      linkRow.style.display = 'none';
     }
 
-    /* CTA 버튼 */
+    /* CTA */
     const cta = document.getElementById('ctaBtn');
     if (r.status === '마감' || r.status === '종료') {
-      cta.className   = 'cta-reg closed';
-      cta.textContent = '접수 마감';
-      cta.onclick     = null;
+      cta.className = 'cta-reg closed';
+      cta.innerHTML = '접수 마감';
+      cta.onclick   = null;
+    } else if (r.status === '접수전') {
+      cta.className = 'cta-reg closed';
+      cta.innerHTML = '접수 예정';
+      cta.onclick   = null;
     } else {
       cta.className = 'cta-reg';
-      cta.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
+      cta.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
       cta.onclick   = () => { if (r.detail_url) window.open(r.detail_url, '_blank'); };
     }
 
-    /* 찜 아이콘 초기 상태 */
     updateWishIcon(wishlist.includes(r.title));
   })();
 </script>
