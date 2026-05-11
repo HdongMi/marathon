@@ -1,9 +1,3 @@
-"""
-마라톤 대회 크롤러 - roadrun.co.kr (marathon.pe.kr)
-매주 자동 실행 → races.json 업데이트
-+ 구글 Custom Search API로 공식 홈페이지 URL 자동 탐색
-"""
-
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -12,8 +6,8 @@ import os
 import time
 from datetime import datetime
 
-BASE_URL  = "http://www.roadrun.co.kr"
-LIST_URL  = f"{BASE_URL}/schedule/list.php"
+BASE_URL  = "https://marathongo.co.kr"
+LIST_URL  = f"{BASE_URL}/schedule/schedule_list.php"
 YEAR      = datetime.now().year
 
 HEADERS = {
@@ -26,7 +20,7 @@ HEADERS = {
 }
 
 EXCLUDE_DOMAINS = [
-    "roadrun.co.kr", "marathon.pe.kr",
+    "roadrun.co.kr", "marathon.pe.kr", "marathongo.co.kr",
     "google.com", "naver.com", "daum.net",
     "kakao.com", "instagram.com", "facebook.com",
     "youtube.com", "twitter.com", "t.co",
@@ -92,11 +86,11 @@ def parse_courses(text: str) -> list[str]:
         ("100km", ["100km", "100 km"]),
         ("울트라", ["울트라"]),
         ("50km",  ["50km", "50 km"]),
-        ("풀",    ["풀코스", "42.195km", "42km", "마라톤,하프"]),
+        ("풀",    ["풀코스", "42.195km", "42km", "마라톤,하프", "풀"]),
         ("하프",  ["하프", "21km", "21.0975km"]),
-        ("10km",  ["10km", "10 km"]),
-        ("5km",   ["5km", "5 km"]),
-        ("3km",   ["3km", "3 km"]),
+        ("10km",  ["10km", "10 km", "10k"]),
+        ("5km",   ["5km", "5 km", "5k"]),
+        ("3km",   ["3km", "3 km", "3k"]),
     ]
     text_lower = text.lower()
     for label, keywords in patterns:
@@ -116,96 +110,79 @@ def parse_region(location: str) -> str:
     return ""
 
 
-def fetch_page(year: int, month: int | None = None) -> str:
-    """roadrun.co.kr 목록 페이지 가져오기 (EUC-KR 디코딩)"""
-    params = {"year": year}
-    if month:
-        params["month"] = month
+def fetch_page(page: int) -> str:
+    """marathongo.co.kr 목록 페이지 가져오기 (UTF-8 디코딩)"""
+    params = {"page": page}
     resp = requests.get(LIST_URL, headers=HEADERS, params=params, timeout=15)
-    resp.encoding = "euc-kr"
+    resp.encoding = "utf-8"
     return resp.text
 
 
-def parse_list_page(html: str, year: int) -> list[dict]:
-    """목록 페이지에서 대회 파싱"""
+def parse_list_page(html: str) -> list[dict]:
+    """목록 페이지에서 대회 파싱 (테이블 구조)"""
     soup  = BeautifulSoup(html, "html.parser")
     races = []
 
-    # roadrun.co.kr 구조: 날짜/대회명/장소/연락처가 텍스트로 묶여있음
-    # bold 태그로 감싸진 대회명 링크 찾기
-    race_links = soup.find_all("a", href=re.compile(r"view\.php\?no=\d+"))
+    # 마라톤고 구조: table 내의 tr 행 단위로 데이터가 존재
+    rows = soup.select("table.table_list tbody tr")
+    if not rows:
+        rows = soup.select("table tr")  # 혹시 모를 대비책
 
-    for link in race_links:
+    for row in rows:
         try:
-            title = link.get_text(strip=True)
-            if not title or len(title) < 2:
+            cols = row.find_all("td")
+            if len(cols) < 5:
                 continue
 
-            # no= 파라미터로 상세 URL 구성
-            no_match = re.search(r"no=(\d+)", link.get("href", ""))
-            if not no_match:
+            # 날짜 추출 (예: 2024-05-19)
+            date_raw = cols[0].get_text(strip=True)
+            if not re.match(r"\d{4}-\d{2}-\d{2}", date_raw):
                 continue
-            race_no    = no_match.group(1)
-            detail_url = f"{BASE_URL}/schedule/view.php?no={race_no}"
+                
+            date_obj = datetime.strptime(date_raw, "%Y-%m-%d")
+            month = date_obj.month
+            day = date_obj.day
+            dow = ""  # 마라톤고 리스트에서는 기본적으로 요일을 제공하지 않음
 
-            # 부모 컨테이너에서 전체 텍스트 추출
-            parent = link.find_parent("td") or link.find_parent("li") or link.find_parent("div")
-            if not parent:
+            # 대회명 및 상세 URL 추출
+            title_tag = cols[1].find("a")
+            if not title_tag:
                 continue
-            block_text = parent.get_text(" ", strip=True)
+            title = title_tag.get_text(strip=True)
+            
+            href = title_tag.get("href", "")
+            if href.startswith("http"):
+                detail_url = href
+            else:
+                detail_url = BASE_URL + href if href.startswith("/") else f"{BASE_URL}/{href}"
 
-            # 날짜 추출: "5/10(일)" 또는 "5/10" 형태
-            date_match = re.search(r"(\d{1,2})/(\d{1,2})\s*[\(\（]?(월|화|수|목|금|토|일)?[\)\）]?", block_text)
-            if not date_match:
-                continue
-            month = int(date_match.group(1))
-            day   = int(date_match.group(2))
-            dow   = date_match.group(3) or ""
+            # 장소
+            location = cols[2].get_text(strip=True)
+            region = parse_region(location)
 
-            # 연도 보정 (현재 월보다 많이 이전이면 내년)
-            cur_month = datetime.now().month
-            race_year = year
-            if month < cur_month - 2:
-                race_year = year + 1
+            # 코스
+            course_raw = cols[3].get_text(strip=True)
+            courses = parse_courses(course_raw)
 
-            date_str = f"{race_year}-{month:02d}-{day:02d}"
-
-            # 코스 추출 (대회명 다음 줄 또는 같은 블록)
-            courses = parse_courses(block_text)
-
-            # 장소 추출: 전화번호 앞에 오는 텍스트
-            location = ""
-            loc_match = re.search(r"(?:풀|하프|10km|5km|3km|울트라|100km|50km)[,\s]*([가-힣\s]+(?:구|동|시|군|읍|면|로|길|공원|운동장|경기장|광장|체육관|대학교|학교)[가-힣\s\d]*)", block_text)
-            if loc_match:
-                location = loc_match.group(1).strip()[:30]
-
-            region = parse_region(location) or parse_region(block_text)
-
-            # 공식 홈페이지 URL (목록에 포함된 경우)
+            # 주최/연락처
+            phone = cols[4].get_text(strip=True)
+            
+            # 리스트에 공식 URL이 없으므로 None (이후 기존 로직인 구글 검색에서 채움)
             official_url = None
-            for a in (parent.find_all("a", href=True) if parent else []):
-                href = a["href"]
-                if href.startswith("http") and is_official_url(href):
-                    official_url = href
-                    break
-
-            # 전화번호
-            phone_match = re.search(r"(\d{2,3}-\d{3,4}-\d{4})", block_text)
-            phone = phone_match.group(1) if phone_match else ""
 
             if not title:
                 continue
 
             races.append({
                 "title":        title,
-                "date":         date_str,
+                "date":         date_raw,
                 "month":        month,
                 "day":          day,
                 "dow":          dow,
                 "region":       region,
                 "location":     location,
                 "courses":      courses,
-                "reg_period":   "",          # roadrun에는 접수기간 별도 없음
+                "reg_period":   "",
                 "status":       "미정",
                 "detail_url":   detail_url,
                 "official_url": official_url,
@@ -240,15 +217,14 @@ def crawl() -> list[dict]:
     url_cache = load_existing_official_urls()
     all_races = []
 
-    # 현재 연도 전체 크롤링 (월별로 나눠서 요청)
-    cur_month = datetime.now().month
-    months_to_fetch = list(range(cur_month, 13))  # 이번달 ~ 12월
+    # 마라톤고는 페이지네이션을 사용합니다. 최근 데이터 확보를 위해 1~3페이지 수집 (필요시 숫자 조정)
+    pages_to_fetch = list(range(1, 4)) 
 
-    for month in months_to_fetch:
-        print(f"  📅 {YEAR}년 {month}월 수집 중...")
+    for page in pages_to_fetch:
+        print(f"  📄 {page}페이지 수집 중...")
         try:
-            html  = fetch_page(YEAR, month)
-            races = parse_list_page(html, YEAR)
+            html  = fetch_page(page)
+            races = parse_list_page(html)
             all_races.extend(races)
             print(f"     → {len(races)}개 수집")
             time.sleep(1)
@@ -256,7 +232,7 @@ def crawl() -> list[dict]:
             print(f"     ❌ 실패: {e}")
             continue
 
-    # 중복 제거 (같은 no 기준)
+    # 중복 제거 (같은 url 기준)
     seen_urls = set()
     unique = []
     for r in all_races:
@@ -298,7 +274,7 @@ def crawl() -> list[dict]:
 def save(races: list[dict]):
     output = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "source":     "http://www.roadrun.co.kr/schedule/list.php",
+        "source":     "https://marathongo.co.kr/schedule/schedule_list.php",
         "total":      len(races),
         "races":      races,
     }
