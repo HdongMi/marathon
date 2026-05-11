@@ -6,10 +6,9 @@
 <title>런뉴 — 대회 상세</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  .d-scroll { flex: 1; overflow-y: auto; }
+  .d-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .d-scroll::-webkit-scrollbar { display: none; }
 
-  /* 히어로 */
   .d-hero { position: relative; height: 260px; overflow: hidden; flex-shrink: 0; }
   .d-hero img { width: 100%; height: 100%; object-fit: cover; filter: brightness(.5); }
   .d-hero-grad {
@@ -18,17 +17,22 @@
   }
   .d-back {
     position: absolute; top: 16px; left: 16px;
+    /* iOS 노치 대응 */
+    top: calc(16px + env(safe-area-inset-top));
     width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; backdrop-filter: blur(10px); text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .d-wish {
     position: absolute; top: 16px; right: 16px;
+    top: calc(16px + env(safe-area-inset-top));
     width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; backdrop-filter: blur(10px);
+    -webkit-tap-highlight-color: transparent;
   }
   .d-hero-txt { position: absolute; bottom: 20px; left: 20px; right: 68px; }
   .d-hero-txt h1 {
@@ -37,10 +41,8 @@
     line-height: 1.2; text-shadow: 0 2px 12px rgba(0,0,0,.6);
   }
 
-  /* 본문 */
   .d-body { padding: 20px; }
 
-  /* 코스 배지 (큰 것) */
   .d-courses { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
   .dc {
     padding: 7px 16px; border-radius: 10px;
@@ -53,7 +55,6 @@
   .dc-short { background: rgba(0,180,255,.15);  color: var(--blue);   border: 1px solid rgba(0,180,255,.3); }
   .dc-ultra { background: rgba(255,160,0,.15);  color: var(--orange); border: 1px solid rgba(255,160,0,.3); }
 
-  /* 정보 그리드 */
   .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
   .info-box {
     background: var(--surface); border: 1px solid var(--border);
@@ -68,7 +69,6 @@
   .info-lbl svg { opacity: .6; flex-shrink: 0; }
   .info-val { font-size: 13px; color: var(--text); font-weight: 700; line-height: 1.5; }
 
-  /* 섹션 */
   .d-section { margin-bottom: 24px; }
   .d-sec-title {
     font-size: 11px; font-weight: 700; color: var(--muted);
@@ -77,12 +77,12 @@
   }
   .d-sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* 링크 행 — 깔끔하게 정제 */
   .link-row {
     display: flex; align-items: center; gap: 12px; padding: 14px 16px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; cursor: pointer; transition: border-color .2s;
     text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .link-row:active { border-color: var(--accent); }
   .link-icon {
@@ -91,15 +91,12 @@
   }
   .link-body { flex: 1; min-width: 0; }
   .link-label { font-size: 13px; color: var(--text); font-weight: 700; margin-bottom: 2px; }
-  .link-url {
-    font-size: 11px; color: var(--muted);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .link-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .link-arrow { flex-shrink: 0; color: var(--muted); }
 
-  /* CTA 바 */
   .cta-bar {
-    padding: 10px 20px 24px;
+    padding: 10px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
     background: linear-gradient(to top, var(--bg) 55%, transparent);
     display: flex; gap: 10px; flex-shrink: 0;
   }
@@ -108,6 +105,7 @@
     border: 1px solid var(--border); background: var(--surface);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
     transition: border-color .15s;
+    -webkit-tap-highlight-color: transparent;
   }
   .cta-share:active { border-color: var(--accent); }
   .cta-reg {
@@ -116,6 +114,7 @@
     font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; color: #000;
     cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: transform .15s;
+    -webkit-tap-highlight-color: transparent;
   }
   .cta-reg.closed { background: var(--surface2); color: var(--muted); cursor: default; }
   .cta-reg:not(.closed):active { transform: scale(.97); }
@@ -125,7 +124,6 @@
 <div class="page">
   <div class="d-scroll">
 
-    <!-- 히어로 -->
     <div class="d-hero">
       <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="" id="heroImg">
       <div class="d-hero-grad"></div>
@@ -144,13 +142,9 @@
       </div>
     </div>
 
-    <!-- 본문 -->
     <div class="d-body">
-
-      <!-- 코스 배지 -->
       <div class="d-courses" id="dCourses"></div>
 
-      <!-- 정보 그리드 -->
       <div class="info-grid">
         <div class="info-box">
           <div class="info-lbl">
@@ -161,7 +155,7 @@
         </div>
         <div class="info-box hi">
           <div class="info-lbl">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             대회일
           </div>
           <div class="info-val" id="dDate">–</div>
@@ -182,7 +176,6 @@
         </div>
       </div>
 
-      <!-- 공식 링크 -->
       <div class="d-section">
         <div class="d-sec-title">공식 링크</div>
         <a class="link-row" id="dLinkRow" href="#" target="_blank" rel="noopener">
@@ -197,18 +190,15 @@
             <div class="link-url" id="dLinkUrl">–</div>
           </div>
           <div class="link-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
           </div>
         </a>
       </div>
-
     </div>
-    <div style="height:90px"></div>
+
+    <div style="height: 20px;"></div>
   </div>
 
-  <!-- CTA 바 -->
   <div class="cta-bar">
     <div class="cta-share" id="shareBtn" onclick="onShare()">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--sub)" stroke-width="2">
@@ -247,10 +237,10 @@
 
   function dcClass(c) {
     const l = c.toLowerCase();
-    if (l.includes('100')||l.includes('70')||l.includes('50')) return 'dc-ultra';
-    if (l === '풀'  || l.includes('42'))  return 'dc-full';
-    if (l === '하프'|| l.includes('21'))  return 'dc-half';
-    if (l.includes('vk')||l.includes('kids')||l.includes('trail')) return 'dc-trail';
+    if (l.includes('100') || l.includes('70') || l.includes('50')) return 'dc-ultra';
+    if (l === '풀'   || l.includes('42')) return 'dc-full';
+    if (l === '하프' || l.includes('21')) return 'dc-half';
+    if (l.includes('vk') || l.includes('kids') || l.includes('trail')) return 'dc-trail';
     return 'dc-short';
   }
 
@@ -261,18 +251,12 @@
     '종료':   'var(--muted)'
   };
 
-  /* URL을 사람이 읽기 쉬운 도메인명으로 변환 */
   function friendlyDomain(url) {
-    try {
-      const host = new URL(url).hostname.replace('www.', '');
-      return host;
-    } catch {
-      return url;
-    }
+    try { return new URL(url).hostname.replace('www.', ''); }
+    catch { return url; }
   }
 
   (async () => {
-    restoreSession();
     const races = await loadRaces();
 
     if (isNaN(idx) || idx < 0 || idx >= races.length) {
@@ -287,9 +271,9 @@
     document.getElementById('dTitle').textContent = r.title;
 
     document.getElementById('dCourses').innerHTML =
-      (r.courses||[]).map(c => `<span class="dc ${dcClass(c)}">${c}</span>`).join('');
+      (r.courses || []).map(c => `<span class="dc ${dcClass(c)}">${c}</span>`).join('');
 
-    document.getElementById('dLocation').textContent = (r.region||'') + ' ' + (r.location||'');
+    document.getElementById('dLocation').textContent = (r.region || '') + ' ' + (r.location || '');
     document.getElementById('dDate').textContent     = r.date + ' (' + r.dow + ')';
     document.getElementById('dReg').textContent      = r.reg_period || '–';
 
@@ -297,7 +281,6 @@
     statusEl.textContent = r.status || '–';
     statusEl.style.color = STATUS_COLOR[r.status] || 'var(--text)';
 
-    /* 링크 — 도메인만 서브텍스트로 */
     const linkRow = document.getElementById('dLinkRow');
     const linkUrl = document.getElementById('dLinkUrl');
     if (r.detail_url) {
@@ -307,7 +290,6 @@
       linkRow.style.display = 'none';
     }
 
-    /* CTA */
     const cta = document.getElementById('ctaBtn');
     if (r.status === '마감' || r.status === '종료') {
       cta.className = 'cta-reg closed';
