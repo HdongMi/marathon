@@ -1,19 +1,19 @@
 name: 🏃 마라톤 대회 정보 자동 업데이트
 on:
   schedule:
-    # 매주 월요일 오전 9시 (KST = UTC+9 → UTC 00:00)
     - cron: '0 0 * * 1'
-  workflow_dispatch:   # 수동 실행 버튼 (GitHub Actions 탭에서 즉시 실행 가능)
+  workflow_dispatch:
+
 jobs:
   crawl-and-update:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # races.json 커밋을 위해 필요
+      contents: write
     steps:
       - name: 📥 저장소 체크아웃
         uses: actions/checkout@v4
 
-      - name: 🗂️ 이전 대회 데이터 백업 (새 대회 비교용)
+      - name: 🗂️ 이전 대회 데이터 백업
         run: |
           if [ -f races.json ]; then
             cp races.json races_prev.json
@@ -21,6 +21,18 @@ jobs:
           else
             echo "⚠️ races.json 없음 (첫 실행)"
           fi
+
+      - name: 🔍 marathongo 접근 테스트
+        run: |
+          echo "=== curl 접근 테스트 ==="
+          curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36" \
+            -H "Accept-Language: ko-KR,ko;q=0.9" \
+            -H "Accept: text/html,application/xhtml+xml" \
+            -L --max-time 15 \
+            https://marathongo.co.kr/raceSchedule/domestic \
+            | head -c 500
+          echo ""
+          echo "=== 테스트 완료 ==="
 
       - name: 🐍 Python 3.11 설정
         uses: actions/setup-python@v5
@@ -42,17 +54,6 @@ jobs:
           head -50 races.json
           echo "=== 총 대회 수 ==="
           python -c "import json; d=json.load(open('races.json')); print(f'총 {d[\"total\"]}개 대회')"
-          echo "=== 공식 URL 확보 현황 ==="
-          python -c "
-          import json
-          d = json.load(open('races.json'))
-          total = len(d['races'])
-          found = sum(1 for r in d['races'] if r.get('official_url'))
-          print(f'공식 URL: {found}/{total}개 확보')
-          for r in d['races']:
-              status = r.get('official_url') or '❌ 없음'
-              print(f\"  {r['title']}: {status}\")
-          "
 
       - name: 🔔 새 대회 감지 & 푸시 알림 발송
         env:
