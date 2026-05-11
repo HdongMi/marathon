@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>런뉴 — 로그인</title>
 <link rel="stylesheet" href="style.css">
+<!-- 카카오 SDK 주석처리
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
   integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
   crossorigin="anonymous"></script>
+-->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   .login-page { position:relative; overflow:hidden; justify-content:flex-end; }
@@ -35,6 +37,7 @@
     font-weight:300; letter-spacing:2px; text-transform:uppercase; margin-bottom:44px;
   }
   .login-btns { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  /* 카카오 버튼 스타일 주석처리
   .btn-kakao {
     width:100%; height:54px; border-radius:14px;
     background:var(--kakao); border:none;
@@ -43,6 +46,7 @@
     color:rgba(0,0,0,.85); cursor:pointer; transition:opacity .15s;
   }
   .btn-kakao:active { opacity:.82; }
+  */
   .btn-google {
     width:100%; height:54px; border-radius:14px;
     background:#fff; border:none;
@@ -74,15 +78,15 @@
     <div class="login-tagline">마라톤 · 트레일 · 러닝 대회 일정</div>
 
     <div class="login-btns">
-      <!-- 카카오 -->
+      <!-- 카카오 버튼 주석처리
       <button class="btn-kakao" onclick="loginKakao()">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(0,0,0,.85)">
           <path d="M12 3C6.477 3 2 6.477 2 10.857c0 2.787 1.637 5.232 4.1 6.698l-1.045 3.9c-.09.337.295.608.587.41L10.1 19.3c.624.087 1.258.132 1.9.132 5.523 0 10-3.477 10-7.857C22 6.477 17.523 3 12 3z"/>
         </svg>
         카카오로 시작하기
       </button>
+      -->
 
-      <!-- 구글 — 직접 renderButton 사용 (redirect_uri 불필요) -->
       <button class="btn-google" onclick="loginGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -98,18 +102,17 @@
     <p class="login-notice">로그인 시 서비스 이용약관 및 개인정보<br>처리방침에 동의하는 것으로 간주합니다</p>
   </div>
 
-  <!-- 구글 One Tap 렌더용 숨김 컨테이너 -->
   <div id="googleBtnContainer" style="position:fixed;opacity:0;pointer-events:none;top:0;left:0;"></div>
 </div>
 
 <script src="app.js"></script>
 <script>
-  /* 실제 로그인 상태일 때만 목록으로 (스킵은 로그인 아님) */
   var session = restoreSession();
   if (session === 'user') window.location.href = getBasePath() + 'index.html';
 
-  /* 카카오 초기화 */
+  /* 카카오 초기화 주석처리
   initKakao();
+  */
 </script>
 </body>
 </html>
