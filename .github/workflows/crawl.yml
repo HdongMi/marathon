@@ -1,20 +1,26 @@
 name: 🏃 마라톤 대회 정보 자동 업데이트
-
 on:
   schedule:
     # 매주 월요일 오전 9시 (KST = UTC+9 → UTC 00:00)
     - cron: '0 0 * * 1'
   workflow_dispatch:   # 수동 실행 버튼 (GitHub Actions 탭에서 즉시 실행 가능)
-
 jobs:
   crawl-and-update:
     runs-on: ubuntu-latest
     permissions:
       contents: write   # races.json 커밋을 위해 필요
-
     steps:
       - name: 📥 저장소 체크아웃
         uses: actions/checkout@v4
+
+      - name: 🗂️ 이전 대회 데이터 백업 (새 대회 비교용)
+        run: |
+          if [ -f races.json ]; then
+            cp races.json races_prev.json
+            echo "✅ races_prev.json 생성 완료"
+          else
+            echo "⚠️ races.json 없음 (첫 실행)"
+          fi
 
       - name: 🐍 Python 3.11 설정
         uses: actions/setup-python@v5
@@ -22,7 +28,7 @@ jobs:
           python-version: '3.11'
 
       - name: 📦 의존성 설치
-        run: pip install requests beautifulsoup4 lxml
+        run: pip install requests beautifulsoup4 lxml firebase-admin
 
       - name: 🕷️ 크롤러 실행
         run: python crawl.py
@@ -33,6 +39,12 @@ jobs:
           head -50 races.json
           echo "=== 총 대회 수 ==="
           python -c "import json; d=json.load(open('races.json')); print(f'총 {d[\"total\"]}개 대회')"
+
+      - name: 🔔 새 대회 감지 & 푸시 알림 발송
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: python send_push.py
 
       - name: 💾 변경사항 자동 커밋
         uses: stefanzweifel/git-auto-commit-action@v5
