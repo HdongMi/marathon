@@ -1,13 +1,14 @@
 """
 마라톤 대회 크롤러 - marathongo.co.kr
 매주 자동 실행 → races.json 업데이트
-+ 각 대회 상세페이지에서 공식 URL / 참가비 / 연락처 추가 크롤링
++ 구글 Custom Search API로 공식 홈페이지 URL 자동 탐색
 """
 
 import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import os
 import time
 from datetime import datetime
 
@@ -23,17 +24,18 @@ HEADERS = {
     "Accept-Language": "ko-KR,ko;q=0.9",
 }
 
-# marathongo 자체 도메인은 공식 URL로 취급 안 함
+# 공식 URL로 취급하지 않을 도메인
 EXCLUDE_DOMAINS = [
-    "marathongo.co.kr",
-    "google.com", "naver.com", "kakao.com",
-    "instagram.com", "facebook.com", "youtube.com",
-    "twitter.com", "t.co",
+    "marathongo.co.kr", "google.com", "naver.com", "daum.net",
+    "kakao.com", "instagram.com", "facebook.com", "youtube.com",
+    "twitter.com", "t.co", "namu.wiki", "wikipedia.org",
+    "runable.me", "runningwikii.com", "kormarathon.com",
+    "ahotu.com", "myresult.co.kr", "cashwalk.com",
 ]
 
 
 def is_official_url(url: str) -> bool:
-    """공식 홈페이지 URL인지 판단 (SNS·검색엔진 제외)"""
+    """공식 홈페이지 URL인지 판단"""
     try:
         from urllib.parse import urlparse
         host = urlparse(url).netloc.lower().replace("www.", "")
@@ -42,54 +44,59 @@ def is_official_url(url: str) -> bool:
         return False
 
 
-def crawl_detail(detail_url: str) -> dict:
-    """
-    마라톤고 상세페이지에서 추가 정보 크롤링
-    반환: {"official_url": str, "fees": [...], "contact": {...}}
-    """
-    result = {"official_url": None, "fees": [], "contact": {}}
+# ── 기존 races.json에서 공식 URL 캐시 로드 ────────────────
+def load_existing_official_urls() -> dict:
+    """기존 races.json에서 title → official_url 매핑 로드 (재크롤링 방지)"""
+    cache = {}
     try:
-        resp = requests.get(detail_url, headers=HEADERS, timeout=10)
+        with open("races.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+        for r in data.get("races", []):
+            if r.get("official_url"):
+                cache[r["title"]] = r["official_url"]
+        print(f"📦 기존 공식 URL 캐시 {len(cache)}개 로드")
+    except FileNotFoundError:
+        pass
+    return cache
+
+
+# ── 구글 Custom Search API로 공식 URL 탐색 ────────────────
+def search_official_url(title: str) -> str | None:
+    """구글 검색으로 대회 공식 홈페이지 URL 탐색"""
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    cse_id  = os.environ.get("GOOGLE_CSE_ID")
+
+    if not api_key or not cse_id:
+        print("  ⚠️ GOOGLE_API_KEY 또는 GOOGLE_CSE_ID 없음 → 건너뜀")
+        return None
+
+    query = f"{title} 공식 홈페이지 마라톤 접수"
+    url   = "https://www.googleapis.com/customsearch/v1"
+    params = {
+        "key": api_key,
+        "cx":  cse_id,
+        "q":   query,
+        "num": 5,
+        "lr":  "lang_ko",
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=10)
         resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-        text = soup.get_text(" ", strip=True)
+        items = resp.json().get("items", [])
 
-        # ── 1. 공식 홈페이지 URL 추출 ──────────────────────────
-        for a in soup.find_all("a", href=True):
-            href = a["href"].strip()
-            if href.startswith("http") and is_official_url(href):
-                result["official_url"] = href
-                break
+        for item in items:
+            link = item.get("link", "")
+            if is_official_url(link):
+                print(f"  ✅ 공식 URL 발견: {link}")
+                return link
 
-        # ── 2. 참가비 추출 ──────────────────────────────────────
-        # 패턴: "풀코스 50,000원" / "하프 40,000원" / "10km 30,000원" 등
-        fee_patterns = [
-            r"(풀코스|풀|하프|10\s*km|10K|5\s*km|5K|3\s*km|울트라|100\s*km|50\s*km|42\s*km|21\s*km|기부|트레일)[^\d]{0,10}([\d,]+)\s*원",
-        ]
-        seen_courses = set()
-        for pattern in fee_patterns:
-            for m in re.finditer(pattern, text, re.IGNORECASE):
-                course = m.group(1).strip()
-                price  = m.group(2).strip() + "원"
-                if course not in seen_courses:
-                    seen_courses.add(course)
-                    result["fees"].append({"course": course, "price": price})
-
-        # ── 3. 연락처 추출 ──────────────────────────────────────
-        # 전화번호: 02-xxxx-xxxx / 010-xxxx-xxxx / 0xx-xxx-xxxx
-        phone_match = re.search(r"(\d{2,3}-\d{3,4}-\d{4})", text)
-        if phone_match:
-            result["contact"]["phone"] = phone_match.group(1)
-
-        # 이메일
-        email_match = re.search(r"([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})", text)
-        if email_match:
-            result["contact"]["email"] = email_match.group(1)
+        print(f"  ℹ️ 공식 URL 없음 (검색결과 {len(items)}개 모두 제외됨)")
+        return None
 
     except Exception as e:
-        print(f"  ⚠️ 상세 크롤링 실패 ({detail_url}): {e}")
-
-    return result
+        print(f"  ⚠️ 구글 검색 오류: {e}")
+        return None
 
 
 def parse_courses(text: str) -> list[str]:
@@ -122,8 +129,8 @@ def parse_race_card(card) -> dict | None:
         if not date_match:
             return None
         month = int(date_match.group(1))
-        day = int(date_match.group(2))
-        year = datetime.now().year
+        day   = int(date_match.group(2))
+        year  = datetime.now().year
         if month < datetime.now().month - 1:
             year += 1
         date_str = f"{year}-{month:02d}-{day:02d}"
@@ -153,27 +160,24 @@ def parse_race_card(card) -> dict | None:
             reg_period = f"{reg_match.group(1)} ~ {reg_match.group(2)}"
 
         courses = parse_courses(text)
-        status = parse_status(text)
+        status  = parse_status(text)
 
         if not title or not date_str:
             return None
 
         return {
-            "title": title,
-            "date": date_str,
-            "month": month,
-            "day": day,
-            "dow": dow,
-            "region": region,
-            "location": location,
-            "courses": courses,
+            "title":      title,
+            "date":       date_str,
+            "month":      month,
+            "day":        day,
+            "dow":        dow,
+            "region":     region,
+            "location":   location,
+            "courses":    courses,
             "reg_period": reg_period,
-            "status": status,
+            "status":     status,
             "detail_url": detail_url,
-            # 상세 크롤링으로 채워질 필드 (기본값)
             "official_url": None,
-            "fees": [],
-            "contact": {},
         }
     except Exception as e:
         print(f"카드 파싱 오류: {e}")
@@ -182,6 +186,9 @@ def parse_race_card(card) -> dict | None:
 
 def crawl() -> list[dict]:
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] 크롤링 시작: {LIST_URL}")
+
+    # 기존 공식 URL 캐시 (API 호출 절약)
+    url_cache = load_existing_official_urls()
     races = []
 
     try:
@@ -189,8 +196,8 @@ def crawl() -> list[dict]:
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        links = soup.find_all("a", href=re.compile(r"/raceDetail/domestic/"))
-        seen = set()
+        links   = soup.find_all("a", href=re.compile(r"/raceDetail/domestic/"))
+        seen    = set()
 
         for link in links:
             href = link.get("href", "")
@@ -219,18 +226,24 @@ def crawl() -> list[dict]:
                 seen_keys.add(key)
                 unique.append(r)
 
-        print(f"✅ 목록 {len(unique)}개 수집 완료 → 상세 페이지 크롤링 시작")
+        print(f"✅ 목록 {len(unique)}개 수집 완료 → 공식 URL 탐색 시작")
 
-        # ── 각 대회 상세페이지 개별 크롤링 ──────────────────────
+        # ── 공식 URL 자동 탐색 ────────────────────────────────
         for i, race in enumerate(unique):
-            if not race.get("detail_url"):
+            title = race["title"]
+
+            # 캐시에 있으면 API 호출 안 함
+            if title in url_cache:
+                race["official_url"] = url_cache[title]
+                print(f"  [{i+1}/{len(unique)}] {title} → 캐시 사용: {url_cache[title]}")
                 continue
-            print(f"  [{i+1}/{len(unique)}] {race['title']} 상세 크롤링 중...")
-            detail = crawl_detail(race["detail_url"])
-            race["official_url"] = detail["official_url"]
-            race["fees"]         = detail["fees"]
-            race["contact"]      = detail["contact"]
-            time.sleep(0.5)  # 서버 부하 방지
+
+            print(f"  [{i+1}/{len(unique)}] {title} → 구글 검색 중...")
+            official_url = search_official_url(title)
+            race["official_url"] = official_url
+
+            # API 호출 간격 (429 방지)
+            time.sleep(1)
 
         return unique
 
@@ -242,9 +255,9 @@ def crawl() -> list[dict]:
 def save(races: list[dict]):
     output = {
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "source": "https://marathongo.co.kr/raceSchedule/domestic",
-        "total": len(races),
-        "races": races,
+        "source":     "https://marathongo.co.kr/raceSchedule/domestic",
+        "total":      len(races),
+        "races":      races,
     }
     with open("races.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
