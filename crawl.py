@@ -30,12 +30,33 @@ EXCLUDE_DOMAINS = [
     "twitter.com", "t.co", "namu.wiki", "wikipedia.org",
     "runable.me", "runningwikii.com", "kormarathon.com",
     "ahotu.com", "myresult.co.kr", "cashwalk.com",
+    # 트래킹/분석 도구
+    "googletagmanager.com", "analytics.google.com",
+    "doubleclick.net", "googlesyndication.com",
 ]
+
+
+def is_valid_url(url: str) -> bool:
+    """URL에 유니코드 한글이 포함된 경우 제외 (잘못 인코딩된 도메인)"""
+    try:
+        from urllib.parse import urlparse
+        host = urlparse(url).netloc
+        # 유니코드 이스케이프(\uXXXX)가 남아있는 경우 제외
+        if "\\u" in url:
+            return False
+        # 퍼센트 인코딩된 한글이 도메인에 있는 경우 제외
+        if re.search(r"%[0-9A-Fa-f]{2}", host):
+            return False
+        return True
+    except Exception:
+        return False
 
 
 def is_official_url(url: str) -> bool:
     try:
         from urllib.parse import urlparse
+        if not is_valid_url(url):
+            return False
         host = urlparse(url).netloc.lower().replace("www.", "")
         return bool(host) and not any(ex in host for ex in EXCLUDE_DOMAINS)
     except Exception:
