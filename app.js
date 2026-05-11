@@ -9,7 +9,6 @@ const MON = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV
 /* ── 현재 디렉토리 기준 base path ── */
 function getBasePath() {
   var path = location.pathname;
-  /* login.html, index.html 등 파일명 제거 → 디렉토리만 */
   var base = path.substring(0, path.lastIndexOf('/') + 1);
   return location.origin + base;
 }
@@ -62,7 +61,6 @@ function loginGoogle() {
     client_id: GOOGLE_CID,
     callback: function(res) {
       try {
-        /* JWT Base64 디코딩 */
         const base64 = res.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
         const payload = JSON.parse(decodeURIComponent(escape(atob(base64))));
         afterLogin({
@@ -81,7 +79,6 @@ function loginGoogle() {
     cancel_on_tap_outside: false
   });
 
-  /* 숨겨진 컨테이너에 버튼 렌더 후 자동 클릭 */
   var container = document.getElementById('googleBtnContainer');
   if (!container) {
     container = document.createElement('div');
@@ -101,7 +98,6 @@ function loginGoogle() {
     if (btn) {
       btn.click();
     } else {
-      /* renderButton 실패시 prompt() 시도 */
       google.accounts.id.prompt(function(notification) {
         if (notification.isNotDisplayed()) {
           alert('구글 로그인 팝업이 차단됐어요.\n브라우저 팝업 차단을 해제해주세요.');
@@ -117,7 +113,8 @@ function loginGoogle() {
 function skipLogin() {
   localStorage.setItem('runnu_skip', '1');
   localStorage.removeItem('runnu_user');
-  window.location.href = getBasePath() + 'index.html';
+  // replace() 사용 → 히스토리에 login.html이 남지 않아 뒤로가기 버그 방지
+  location.replace(getBasePath() + 'index.html');
 }
 
 /* ════════════════════════════════
@@ -128,7 +125,8 @@ function afterLogin(user) {
   localStorage.setItem('runnu_user', JSON.stringify(user));
   localStorage.removeItem('runnu_skip');
   wishlist = JSON.parse(localStorage.getItem('runnu_wish_' + (user.email || 'guest')) || '[]');
-  window.location.href = getBasePath() + 'index.html';
+  // replace() 사용 → 히스토리에 login.html이 남지 않아 뒤로가기 버그 방지
+  location.replace(getBasePath() + 'index.html');
 }
 
 function doLogout() {
@@ -140,7 +138,8 @@ function doLogout() {
   localStorage.removeItem('runnu_user');
   localStorage.removeItem('runnu_skip');
   wishlist = [];
-  window.location.href = getBasePath() + 'login.html';
+  // replace() 사용 → 히스토리에 index.html이 남지 않아 로그아웃 후 뒤로가기 방지
+  location.replace(getBasePath() + 'login.html');
 }
 
 /* ════════════════════════════════
@@ -271,7 +270,7 @@ function render(list) {
 function toggleWish(raceTitle) {
   if (!currentUser) {
     if (confirm('찜 기능은 로그인이 필요해요.\n로그인 화면으로 이동할까요?'))
-      window.location.href = getBasePath() + 'login.html';
+      location.replace(getBasePath() + 'login.html');
     return false;
   }
   var idx = wishlist.indexOf(raceTitle);
