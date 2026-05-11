@@ -31,6 +31,9 @@ jobs:
         run: pip install requests beautifulsoup4 lxml firebase-admin
 
       - name: 🕷️ 크롤러 실행
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
         run: python crawl.py
 
       - name: 📊 결과 확인
@@ -39,6 +42,17 @@ jobs:
           head -50 races.json
           echo "=== 총 대회 수 ==="
           python -c "import json; d=json.load(open('races.json')); print(f'총 {d[\"total\"]}개 대회')"
+          echo "=== 공식 URL 확보 현황 ==="
+          python -c "
+          import json
+          d = json.load(open('races.json'))
+          total = len(d['races'])
+          found = sum(1 for r in d['races'] if r.get('official_url'))
+          print(f'공식 URL: {found}/{total}개 확보')
+          for r in d['races']:
+              status = r.get('official_url') or '❌ 없음'
+              print(f\"  {r['title']}: {status}\")
+          "
 
       - name: 🔔 새 대회 감지 & 푸시 알림 발송
         env:
