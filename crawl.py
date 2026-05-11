@@ -1,5 +1,6 @@
 """
 마라톤 대회 크롤러 - marathongo.co.kr
+상세페이지 Next.js API에서 공식 홈페이지 URL 추출
 """
 
 import requests
@@ -41,43 +42,90 @@ def is_official_url(url: str) -> bool:
         return False
 
 
-def load_existing_official_urls() -> dict:
+def load_existing_urls() -> dict:
+    """기존 races.json에서 title → official_url 캐시 로드"""
     cache = {}
     try:
         with open("races.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         for r in data.get("races", []):
             if r.get("official_url"):
-                cache[r["title"]] = r["official_url"]
+                cache[r["detail_url"]] = r["official_url"]
         print(f"[캐시] 기존 공식 URL {len(cache)}개 로드")
     except FileNotFoundError:
         pass
     return cache
 
 
-def search_official_url(title: str) -> str | None:
-    api_key = os.environ.get("GOOGLE_API_KEY")
-    cse_id  = os.environ.get("GOOGLE_CSE_ID")
-    if not api_key or not cse_id:
-        return None
-    query  = f"{title} 공식 홈페이지 마라톤 접수"
-    params = {"key": api_key, "cx": cse_id, "q": query, "num": 5, "lr": "lang_ko"}
+def get_build_id(html: str) -> str | None:
+    """Next.js buildId 추출"""
+    match = re.search(r'"buildId"\s*:\s*"([^"]+)"', html)
+    return match.group(1) if match else None
+
+
+def fetch_official_url(detail_url: str, build_id: str | None) -> str | None:
+    """
+    marathongo 상세페이지에서 공식 URL 추출
+    1) Next.js JSON API 시도
+    2) 실패 시 HTML에서 외부 링크 추출
+    """
+    slug = detail_url.split("/raceDetail/domestic/")[-1]
+
+    # ── 방법 1: Next.js _next/data API ──────────────────────
+    if build_id:
+        api_url = f"{BASE_URL}/_next/data/{build_id}/raceDetail/domestic/{slug}.json"
+        try:
+            resp = requests.get(api_url, headers=HEADERS, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json()
+                # pageProps 안에서 홈페이지 URL 탐색
+                page_props = data.get("pageProps", {})
+                race_data  = page_props.get("race", page_props.get("data", page_props))
+                # 가능한 필드명들
+                for key in ["homepageUrl", "homepage_url", "officialUrl", "official_url",
+                            "websiteUrl", "website_url", "link", "url", "siteUrl"]:
+                    url = race_data.get(key, "")
+                    if url and is_official_url(url):
+                        return url
+                # 전체 JSON 문자열에서 http로 시작하는 외부 URL 탐색
+                json_str = json.dumps(data)
+                urls = re.findall(r'https?://[^\s"\'<>]+', json_str)
+                for url in urls:
+                    if is_official_url(url) and not url.endswith((".png", ".jpg", ".svg", ".ico")):
+                        return url
+        except Exception:
+            pass
+
+    # ── 방법 2: HTML 파싱으로 외부 링크 추출 ───────────────
     try:
-        resp = requests.get(
-            "https://www.googleapis.com/customsearch/v1",
-            params=params, timeout=10
-        )
-        # 403이면 조용히 None 반환 (API 키 문제)
-        if resp.status_code == 403:
-            return None
-        resp.raise_for_status()
-        for item in resp.json().get("items", []):
-            link = item.get("link", "")
-            if is_official_url(link):
-                return link
-        return None
+        resp = requests.get(detail_url, headers=HEADERS, timeout=10)
+        if resp.status_code == 200:
+            resp.encoding = "utf-8"
+            soup = BeautifulSoup(resp.text, "html.parser")
+
+            # <a href="http..."> 중 공식 URL 찾기
+            for a in soup.find_all("a", href=True):
+                href = a["href"]
+                if href.startswith("http") and is_official_url(href):
+                    if not href.endswith((".png", ".jpg", ".svg", ".ico")):
+                        return href
+
+            # __NEXT_DATA__ 스크립트에서 URL 탐색
+            next_data = soup.find("script", {"id": "__NEXT_DATA__"})
+            if next_data:
+                try:
+                    nd = json.loads(next_data.string)
+                    nd_str = json.dumps(nd)
+                    urls = re.findall(r'https?://[^\s"\'<>]+', nd_str)
+                    for url in urls:
+                        if is_official_url(url) and not url.endswith((".png", ".jpg", ".svg", ".ico")):
+                            return url
+                except Exception:
+                    pass
     except Exception:
-        return None
+        pass
+
+    return None
 
 
 def parse_courses(text: str) -> list[str]:
@@ -113,12 +161,9 @@ def parse_link(a_tag) -> dict | None:
 
         detail_url = BASE_URL + href
         raw_text   = a_tag.get_text(" ", strip=True)
+        half       = len(raw_text) // 2
+        text       = raw_text[:half].strip() if half > 10 else raw_text
 
-        # 텍스트가 중복 반복 구조 → 앞 절반 사용
-        half = len(raw_text) // 2
-        text = raw_text[:half].strip() if half > 10 else raw_text
-
-        # 날짜 파싱
         date_match = re.search(r"(\d{1,2})월\s*(\d{1,2})일", text)
         if not date_match:
             return None
@@ -145,7 +190,6 @@ def parse_link(a_tag) -> dict | None:
             text
         )
         region = region_match.group(1) if region_match else ""
-
         before_date = text[:date_match.start()].strip()
         courses     = parse_courses(before_date) or parse_courses(text)
 
@@ -185,8 +229,8 @@ def parse_link(a_tag) -> dict | None:
 
 
 def crawl() -> list[dict]:
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] 크롤링 시작: {LIST_URL}")
-    url_cache = load_existing_official_urls()
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M')}] 크롤링 시작")
+    url_cache = load_existing_urls()
 
     try:
         resp = requests.get(LIST_URL, headers=HEADERS, timeout=20)
@@ -194,35 +238,32 @@ def crawl() -> list[dict]:
         resp.encoding = "utf-8"
         html = resp.text
 
-        print(f"[응답] 상태코드: {resp.status_code} | 길이: {len(html)}자")
+        print(f"[응답] {resp.status_code} | {len(html)}자")
 
         if "Host not in allowlist" in html or len(html) < 100:
-            print("[차단] 접근이 차단되었습니다.")
+            print("[차단] 접근 차단됨")
             return []
+
+        # Next.js buildId 추출 (상세 API 호출에 필요)
+        build_id = get_build_id(html)
+        print(f"[빌드] Next.js buildId: {build_id}")
 
         soup  = BeautifulSoup(html, "html.parser")
         links = soup.find_all("a", href=re.compile(r"/raceDetail/domestic/"))
-        print(f"[링크] raceDetail 링크 수: {len(links)}개")
+        print(f"[링크] {len(links)}개")
 
         seen  = set()
         races = []
-
         for a in links:
             href = a.get("href", "")
             if href in seen:
                 continue
             seen.add(href)
-
             race = parse_link(a)
             if race:
                 races.append(race)
 
-        print(f"[파싱] {len(races)}개 파싱 성공")
-
-        # 날짜순 정렬
         races.sort(key=lambda r: r["date"])
-
-        # 중복 제거
         seen_keys = set()
         unique = []
         for r in races:
@@ -231,18 +272,31 @@ def crawl() -> list[dict]:
                 seen_keys.add(key)
                 unique.append(r)
 
-        print(f"[완료] {len(unique)}개 대회 수집")
+        print(f"[파싱] {len(unique)}개 완료")
 
-        # 공식 URL 탐색 (캐시 우선, API 403이면 조용히 스킵)
-        print("[URL] 공식 URL 탐색 중...")
-        for race in unique:
-            title = race["title"]
-            if title in url_cache:
-                race["official_url"] = url_cache[title]
+        # ── 공식 URL 탐색 ──────────────────────────────────
+        print("[URL] 공식 URL 탐색 시작...")
+        found = 0
+        for i, race in enumerate(unique):
+            detail_url = race["detail_url"]
+
+            # 캐시에 있으면 스킵
+            if detail_url in url_cache:
+                race["official_url"] = url_cache[detail_url]
+                found += 1
+                continue
+
+            url = fetch_official_url(detail_url, build_id)
+            if url:
+                race["official_url"] = url
+                found += 1
+                print(f"  [{i+1}/{len(unique)}] ✅ {race['title'][:15]} → {url}")
             else:
-                race["official_url"] = search_official_url(title)
-                time.sleep(0.5)
+                print(f"  [{i+1}/{len(unique)}] ❌ {race['title'][:15]}")
 
+            time.sleep(0.5)  # 상세 요청 간 딜레이
+
+        print(f"[URL] 공식 URL 확보: {found}/{len(unique)}개")
         return unique
 
     except Exception as e:
@@ -259,13 +313,13 @@ def save(races: list[dict]):
     }
     with open("races.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"[저장] races.json 저장 완료 ({len(races)}개)")
+    print(f"[저장] races.json {len(races)}개 저장 완료")
 
 
 if __name__ == "__main__":
     races = crawl()
     if races:
         save(races)
-        print(f"[성공] 총 {len(races)}개 대회 저장 완료!")
+        print(f"[성공] 총 {len(races)}개!")
     else:
-        print("[경고] 수집된 데이터 없음 - 기존 races.json 유지")
+        print("[경고] 데이터 없음 - 기존 유지")
