@@ -63,15 +63,20 @@ def search_official_url(title: str) -> str | None:
     query  = f"{title} 공식 홈페이지 마라톤 접수"
     params = {"key": api_key, "cx": cse_id, "q": query, "num": 5, "lr": "lang_ko"}
     try:
-        resp = requests.get("https://www.googleapis.com/customsearch/v1", params=params, timeout=10)
+        resp = requests.get(
+            "https://www.googleapis.com/customsearch/v1",
+            params=params, timeout=10
+        )
+        # 403이면 조용히 None 반환 (API 키 문제)
+        if resp.status_code == 403:
+            return None
         resp.raise_for_status()
         for item in resp.json().get("items", []):
             link = item.get("link", "")
             if is_official_url(link):
                 return link
         return None
-    except Exception as e:
-        print(f"  [검색오류] {e}")
+    except Exception:
         return None
 
 
@@ -107,11 +112,7 @@ def parse_link(a_tag) -> dict | None:
             return None
 
         detail_url = BASE_URL + href
-
-        # ── 핵심: bytes로 직접 디코딩 ──────────────────────────
-        # BeautifulSoup이 이미 올바르게 파싱했다면 .get_text()가 정상이어야 함
-        # 하지만 인코딩 오류 시 raw bytes에서 직접 추출
-        raw_text = a_tag.get_text(" ", strip=True)
+        raw_text   = a_tag.get_text(" ", strip=True)
 
         # 텍스트가 중복 반복 구조 → 앞 절반 사용
         half = len(raw_text) // 2
@@ -135,8 +136,7 @@ def parse_link(a_tag) -> dict | None:
         reg_match  = re.search(r"(\d{4}\.\d{2}\.\d{2})\s*~\s*(\d{4}\.\d{2}\.\d{2})", text)
         reg_period = f"{reg_match.group(1)} ~ {reg_match.group(2)}" if reg_match else ""
 
-        status = parse_status(text)
-
+        status   = parse_status(text)
         pipes    = re.findall(r"\|\s*([^|]+?)\s*(?=\|)", text)
         location = pipes[0].strip() if pipes else ""
 
@@ -154,7 +154,10 @@ def parse_link(a_tag) -> dict | None:
         after_date = re.sub(r"(접수중|접수마감|접수전|마감)", "", after_date).strip()
         after_date = re.sub(r"\b20\d{2}\b", "", after_date).strip()
         title_raw  = after_date.split("|")[0].strip()
-        title_raw  = re.sub(r"(100km|50km|42km|풀코스|풀|하프|21km|10km|5km|3km|VK|Kids|기부\s*마라톤|울트라)", "", title_raw).strip()
+        title_raw  = re.sub(
+            r"(100km|50km|42km|풀코스|풀|하프|21km|10km|5km|3km|VK|Kids|기부\s*마라톤|울트라)",
+            "", title_raw
+        ).strip()
         title_raw  = re.sub(r"\d+[kKkm]+", "", title_raw).strip()
         title      = title_raw.strip()
 
@@ -188,24 +191,16 @@ def crawl() -> list[dict]:
     try:
         resp = requests.get(LIST_URL, headers=HEADERS, timeout=20)
         resp.raise_for_status()
-
-        # ── 핵심 수정: 인코딩 강제 지정 ──────────────────────
         resp.encoding = "utf-8"
         html = resp.text
 
         print(f"[응답] 상태코드: {resp.status_code} | 길이: {len(html)}자")
-        print(f"[인코딩] {resp.encoding}")
-
-        # 인코딩 확인 (정상이면 한글이 보여야 함)
-        sample = html[5000:5100] if len(html) > 5100 else html[:100]
-        print(f"[샘플] {sample}")
 
         if "Host not in allowlist" in html or len(html) < 100:
             print("[차단] 접근이 차단되었습니다.")
             return []
 
-        # ── BeautifulSoup에도 인코딩 명시 ──────────────────────
-        soup  = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
+        soup  = BeautifulSoup(html, "html.parser")
         links = soup.find_all("a", href=re.compile(r"/raceDetail/domestic/"))
         print(f"[링크] raceDetail 링크 수: {len(links)}개")
 
@@ -222,8 +217,12 @@ def crawl() -> list[dict]:
             if race:
                 races.append(race)
 
+        print(f"[파싱] {len(races)}개 파싱 성공")
+
+        # 날짜순 정렬
         races.sort(key=lambda r: r["date"])
 
+        # 중복 제거
         seen_keys = set()
         unique = []
         for r in races:
@@ -234,13 +233,15 @@ def crawl() -> list[dict]:
 
         print(f"[완료] {len(unique)}개 대회 수집")
 
+        # 공식 URL 탐색 (캐시 우선, API 403이면 조용히 스킵)
+        print("[URL] 공식 URL 탐색 중...")
         for race in unique:
             title = race["title"]
             if title in url_cache:
                 race["official_url"] = url_cache[title]
-                continue
-            race["official_url"] = search_official_url(title)
-            time.sleep(1)
+            else:
+                race["official_url"] = search_official_url(title)
+                time.sleep(0.5)
 
         return unique
 
@@ -265,5 +266,6 @@ if __name__ == "__main__":
     races = crawl()
     if races:
         save(races)
+        print(f"[성공] 총 {len(races)}개 대회 저장 완료!")
     else:
         print("[경고] 수집된 데이터 없음 - 기존 races.json 유지")
