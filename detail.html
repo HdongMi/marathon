@@ -16,9 +16,9 @@
     background: linear-gradient(to bottom, rgba(0,0,0,.2) 0%, var(--bg) 100%);
   }
   .d-back {
-    position: absolute; top: 16px; left: 16px;
-    /* iOS 노치 대응 */
+    position: absolute;
     top: calc(16px + env(safe-area-inset-top));
+    left: 16px;
     width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -26,8 +26,9 @@
     -webkit-tap-highlight-color: transparent;
   }
   .d-wish {
-    position: absolute; top: 16px; right: 16px;
+    position: absolute;
     top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
     width: 38px; height: 38px; background: rgba(0,0,0,.55);
     border: 1px solid rgba(255,255,255,.15); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
@@ -61,6 +62,7 @@
     border-radius: 12px; padding: 14px;
   }
   .info-box.hi { border-color: rgba(232,240,0,.25); }
+  .info-box.full { grid-column: 1 / -1; }
   .info-lbl {
     font-size: 10px; color: var(--muted); font-weight: 600;
     text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px;
@@ -68,6 +70,11 @@
   }
   .info-lbl svg { opacity: .6; flex-shrink: 0; }
   .info-val { font-size: 13px; color: var(--text); font-weight: 700; line-height: 1.5; }
+
+  .fee-list { display: flex; flex-direction: column; gap: 6px; }
+  .fee-item { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .fee-course { color: var(--muted); font-weight: 500; }
+  .fee-price  { color: var(--text);  font-weight: 700; }
 
   .d-section { margin-bottom: 24px; }
   .d-sec-title {
@@ -81,10 +88,12 @@
     display: flex; align-items: center; gap: 12px; padding: 14px 16px;
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 12px; cursor: pointer; transition: border-color .2s;
-    text-decoration: none;
+    text-decoration: none; margin-bottom: 8px;
     -webkit-tap-highlight-color: transparent;
   }
+  .link-row:last-child { margin-bottom: 0; }
   .link-row:active { border-color: var(--accent); }
+  .link-row.primary { border-color: rgba(232,240,0,.25); }
   .link-icon {
     width: 36px; height: 36px; border-radius: 10px; background: var(--surface2);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
@@ -104,8 +113,7 @@
     width: 52px; height: 52px; border-radius: 14px;
     border: 1px solid var(--border); background: var(--surface);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
-    transition: border-color .15s;
-    -webkit-tap-highlight-color: transparent;
+    transition: border-color .15s; -webkit-tap-highlight-color: transparent;
   }
   .cta-share:active { border-color: var(--accent); }
   .cta-reg {
@@ -113,8 +121,7 @@
     background: var(--accent); border: none;
     font-family: 'Noto Sans KR', sans-serif; font-size: 15px; font-weight: 700; color: #000;
     cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: transform .15s;
-    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s; -webkit-tap-highlight-color: transparent;
   }
   .cta-reg.closed { background: var(--surface2); color: var(--muted); cursor: default; }
   .cta-reg:not(.closed):active { transform: scale(.97); }
@@ -143,6 +150,7 @@
     </div>
 
     <div class="d-body">
+
       <div class="d-courses" id="dCourses"></div>
 
       <div class="info-grid">
@@ -174,28 +182,81 @@
           </div>
           <div class="info-val" id="dStatus">–</div>
         </div>
+
+        <!-- 참가비: fees 필드 있을 때만 노출 -->
+        <div class="info-box full" id="dFeeBox" style="display:none;">
+          <div class="info-lbl">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            참가비
+          </div>
+          <div class="fee-list" id="dFeeList"></div>
+        </div>
       </div>
 
-      <div class="d-section">
-        <div class="d-sec-title">공식 링크</div>
-        <a class="link-row" id="dLinkRow" href="#" target="_blank" rel="noopener">
+      <!-- 문의: contact 필드 있을 때만 노출 -->
+      <div class="d-section" id="dContactSection" style="display:none;">
+        <div class="d-sec-title">문의</div>
+        <a class="link-row" id="dPhoneRow" href="#" style="display:none;">
           <div class="link-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.06 6.06l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="link-body">
+            <div class="link-label">전화 문의</div>
+            <div class="link-url" id="dPhone">–</div>
+          </div>
+          <div class="link-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </a>
+        <a class="link-row" id="dEmailRow" href="#" style="display:none;">
+          <div class="link-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="link-body">
+            <div class="link-label">이메일 문의</div>
+            <div class="link-url" id="dEmail">–</div>
+          </div>
+          <div class="link-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </a>
+      </div>
+
+      <!-- 공식 링크 -->
+      <div class="d-section">
+        <div class="d-sec-title">공식 링크</div>
+
+        <!-- 공식 홈페이지 (official_url 있을 때만) -->
+        <a class="link-row primary" id="dOfficialRow" href="#" target="_blank" rel="noopener" style="display:none;">
+          <div class="link-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
               <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
           </div>
           <div class="link-body">
-            <div class="link-label">공식 홈페이지 바로가기</div>
-            <div class="link-url" id="dLinkUrl">–</div>
+            <div class="link-label">공식 홈페이지</div>
+            <div class="link-url" id="dOfficialUrl">–</div>
           </div>
-          <div class="link-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+          <div class="link-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
+        </a>
+
+        <!-- 네이버 검색 (항상 표시 — 공식 URL 없을 때 대안) -->
+        <a class="link-row" id="dNaverRow" href="#" target="_blank" rel="noopener">
+          <div class="link-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
           </div>
+          <div class="link-body">
+            <div class="link-label">네이버에서 검색</div>
+            <div class="link-url" id="dNaverQuery">–</div>
+          </div>
+          <div class="link-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
         </a>
       </div>
-    </div>
 
+    </div>
     <div style="height: 20px;"></div>
   </div>
 
@@ -226,13 +287,10 @@
     document.getElementById('wishIcon').setAttribute('fill',   wished ? '#ff4d2e' : 'none');
     document.getElementById('wishIcon').setAttribute('stroke', wished ? '#ff4d2e' : 'white');
   }
-
   function onToggleWish() {
     if (!race) return;
-    const wished = toggleWish(race.title);
-    updateWishIcon(wished);
+    updateWishIcon(toggleWish(race.title));
   }
-
   function onShare() { if (race) shareRace(race); }
 
   function dcClass(c) {
@@ -245,10 +303,8 @@
   }
 
   const STATUS_COLOR = {
-    '접수중': 'var(--accent)',
-    '마감':   'var(--muted)',
-    '접수전': 'var(--blue)',
-    '종료':   'var(--muted)'
+    '접수중': 'var(--accent)', '마감': 'var(--muted)',
+    '접수전': 'var(--blue)',   '종료': 'var(--muted)'
   };
 
   function friendlyDomain(url) {
@@ -258,7 +314,6 @@
 
   (async () => {
     const races = await loadRaces();
-
     if (isNaN(idx) || idx < 0 || idx >= races.length) {
       document.getElementById('dTitle').textContent = '대회를 찾을 수 없어요';
       return;
@@ -281,15 +336,46 @@
     statusEl.textContent = r.status || '–';
     statusEl.style.color = STATUS_COLOR[r.status] || 'var(--text)';
 
-    const linkRow = document.getElementById('dLinkRow');
-    const linkUrl = document.getElementById('dLinkUrl');
-    if (r.detail_url) {
-      linkRow.href = r.detail_url;
-      linkUrl.textContent = friendlyDomain(r.detail_url);
-    } else {
-      linkRow.style.display = 'none';
+    // 참가비
+    if (r.fees && r.fees.length > 0) {
+      document.getElementById('dFeeBox').style.display = '';
+      document.getElementById('dFeeList').innerHTML = r.fees.map(f =>
+        `<div class="fee-item"><span class="fee-course">${f.course}</span><span class="fee-price">${f.price}</span></div>`
+      ).join('');
     }
 
+    // 문의
+    if (r.contact && (r.contact.phone || r.contact.email)) {
+      document.getElementById('dContactSection').style.display = '';
+      if (r.contact.phone) {
+        const el = document.getElementById('dPhoneRow');
+        el.style.display = 'flex';
+        el.href = `tel:${r.contact.phone.replace(/-/g, '')}`;
+        document.getElementById('dPhone').textContent = r.contact.phone;
+      }
+      if (r.contact.email) {
+        const el = document.getElementById('dEmailRow');
+        el.style.display = 'flex';
+        el.href = `mailto:${r.contact.email}`;
+        document.getElementById('dEmail').textContent = r.contact.email;
+      }
+    }
+
+    // 공식 홈페이지 (official_url 있으면 강조 표시)
+    const officialRow = document.getElementById('dOfficialRow');
+    if (r.official_url) {
+      officialRow.style.display = 'flex';
+      officialRow.href = r.official_url;
+      document.getElementById('dOfficialUrl').textContent = friendlyDomain(r.official_url);
+    }
+
+    // 네이버 검색 (항상 표시)
+    const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(r.title)}`;
+    document.getElementById('dNaverRow').href = naverUrl;
+    document.getElementById('dNaverQuery').textContent = r.title;
+
+    // CTA 버튼 — 공식URL 있으면 거기로, 없으면 네이버 검색으로
+    const targetUrl = r.official_url || naverUrl;
     const cta = document.getElementById('ctaBtn');
     if (r.status === '마감' || r.status === '종료') {
       cta.className = 'cta-reg closed';
@@ -302,7 +388,7 @@
     } else {
       cta.className = 'cta-reg';
       cta.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> 대회 신청하기`;
-      cta.onclick   = () => { if (r.detail_url) window.open(r.detail_url, '_blank'); };
+      cta.onclick   = () => window.open(targetUrl, '_blank');
     }
 
     updateWishIcon(wishlist.includes(r.title));
