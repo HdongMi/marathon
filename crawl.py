@@ -1,5 +1,6 @@
 """
 마라톤 대회 크롤러 - marathongo.co.kr
+실제 HTML 구조: <a href="/raceDetail/..."> 안에 날짜+코스+제목+장소+상태 텍스트 포함
 """
 
 import requests
@@ -78,14 +79,15 @@ def search_official_url(title: str) -> str | None:
 
 def parse_courses(text: str) -> list[str]:
     result = []
+    # 실제 텍스트 예: "하프10km5km" "풀하프11km" "100km50km" "10km5km가족코스(5km)"
     checks = [
         ("100km", ["100km"]),
         ("울트라", ["울트라"]),
         ("50km",  ["50km"]),
-        ("풀",    ["풀코스", "42km", "풀,"]),
+        ("풀",    ["풀코스", "풀하프", "풀,"]),
         ("하프",  ["하프", "21km"]),
-        ("10km",  ["10km"]),
-        ("5km",   ["5km"]),
+        ("10km",  ["10km", "10K"]),
+        ("5km",   ["5km",  "5K"]),
         ("3km",   ["3km"]),
     ]
     for label, kws in checks:
@@ -95,20 +97,35 @@ def parse_courses(text: str) -> list[str]:
 
 
 def parse_status(text: str) -> str:
-    if "마감" in text:   return "마감"
-    if "접수중" in text: return "접수중"
-    if "접수전" in text: return "접수전"
+    if "접수마감" in text or "마감" in text: return "마감"
+    if "접수중" in text:                      return "접수중"
+    if "접수전" in text:                      return "접수전"
     return "미정"
 
 
-def parse_race_card(card) -> dict | None:
+def parse_link(a_tag) -> dict | None:
+    """
+    <a href="/raceDetail/domestic/..."> 태그 하나에서 대회 정보 추출
+    실제 텍스트 구조 예시:
+    "5월 9일 (토) 10km 2026 나는 솔로런 서울 | 여의도공원 문화의마당 | 08:30 집결 | 2026 접수마감 2026.03.18 ~ 2026.04.15 KT ENA 런코리아 5월 9일 (토) 2026 나는 솔로런 서울 | ..."
+    → 텍스트가 2번 반복되는 구조이므로 앞 절반만 사용
+    """
     try:
-        text     = card.get_text(" ", strip=True)
-        link_tag = card.find("a", href=True)
-        href     = link_tag["href"] if link_tag else ""
-        detail_url = BASE_URL + href if href.startswith("/") else href
+        href = a_tag.get("href", "")
+        if not href.startswith("/raceDetail/domestic/"):
+            return None
 
-        date_match = re.search(r"(\d+)월\s*(\d+)일", text)
+        detail_url = BASE_URL + href
+        raw_text   = a_tag.get_text(" ", strip=True)
+
+        # 텍스트가 중복 반복되는 구조 → 앞 절반만 사용
+        half = len(raw_text) // 2
+        text = raw_text[:half].strip()
+        if not text:
+            text = raw_text
+
+        # ── 날짜 파싱: "5월 9일" ──────────────────────────────
+        date_match = re.search(r"(\d{1,2})월\s*(\d{1,2})일", text)
         if not date_match:
             return None
         month = int(date_match.group(1))
@@ -118,35 +135,51 @@ def parse_race_card(card) -> dict | None:
             year += 1
         date_str = f"{year}-{month:02d}-{day:02d}"
 
-        dow_match = re.search(r"\((월|화|수|목|금|토|일)\)", text)
+        # ── 요일 파싱 ─────────────────────────────────────────
+        dow_match = re.search(r"[\(（](월|화|수|목|금|토|일)[\)）]", text)
         dow = dow_match.group(1) if dow_match else ""
 
-        title = ""
-        if link_tag:
-            title = link_tag.get_text(strip=True)
-            title = re.sub(r"\d+월\s*\d+일.*?\)", "", title).strip()
-            title = re.sub(r"(100km|50km|42km|풀|하프|21km|10km|5km|3km|VK|Kids)", "", title).strip()
-
-        location = ""
-        loc_match = re.search(r"\|\s*([^|]+)\s*\|", text)
-        if loc_match:
-            location = loc_match.group(1).strip()
-
-        region = ""
-        region_match = re.search(
-            r"(서울|경기|충청|충남|충북|대전|경상|경남|경북|부산|대구|전라|전남|전북|광주|제주|강원|울산|세종|인천)", text)
-        if region_match:
-            region = region_match.group(1)
-
-        reg_period = ""
+        # ── 접수기간 파싱: "2026.03.18 ~ 2026.04.15" ─────────
         reg_match = re.search(r"(\d{4}\.\d{2}\.\d{2})\s*~\s*(\d{4}\.\d{2}\.\d{2})", text)
-        if reg_match:
-            reg_period = f"{reg_match.group(1)} ~ {reg_match.group(2)}"
+        reg_period = f"{reg_match.group(1)} ~ {reg_match.group(2)}" if reg_match else ""
 
-        courses = parse_courses(text)
-        status  = parse_status(text)
+        # ── 상태 파싱 ─────────────────────────────────────────
+        status = parse_status(text)
 
-        if not title:
+        # ── 장소 파싱: "| 장소 |" 구조 ──────────────────────
+        pipes = re.findall(r"\|\s*([^|]+?)\s*(?=\||$)", text)
+        location = pipes[0].strip() if pipes else ""
+
+        # ── 지역 파싱 ─────────────────────────────────────────
+        region_match = re.search(
+            r"(서울|경기|충청|충남|충북|대전|경상|경남|경북|부산|대구|전라|전남|전북|광주|제주|강원|울산|세종|인천)",
+            text
+        )
+        region = region_match.group(1) if region_match else ""
+
+        # ── 코스 파싱 ─────────────────────────────────────────
+        # 날짜 이전 텍스트 또는 날짜 직후 텍스트에서 추출
+        before_date = text[:date_match.start()].strip()
+        courses = parse_courses(before_date) or parse_courses(text)
+
+        # ── 제목 파싱 ─────────────────────────────────────────
+        # 날짜+요일 이후 ~ 첫 | 이전 텍스트
+        after_date = text[date_match.end():]
+        # 요일 괄호 제거
+        after_date = re.sub(r"[\(（](월|화|수|목|금|토|일)[\)）]", "", after_date).strip()
+        # 접수상태 제거
+        after_date = re.sub(r"(접수중|접수마감|접수전|마감)", "", after_date).strip()
+        # 연도 제거 ("2026")
+        after_date = re.sub(r"\b\d{4}\b", "", after_date).strip()
+        # | 이후 제거
+        title_raw = after_date.split("|")[0].strip()
+        # 코스 텍스트 제거
+        title_raw = re.sub(r"(100km|50km|42km|풀코스|풀|하프|21km|10km|5km|3km|VK|Kids|기부\s*마라톤|울트라)", "", title_raw).strip()
+        # 숫자+K 제거 (예: 37K, 24K, 12K, 11km)
+        title_raw = re.sub(r"\d+[kKkm]+", "", title_raw).strip()
+        title = title_raw.strip()
+
+        if not title or len(title) < 2:
             return None
 
         return {
@@ -163,6 +196,7 @@ def parse_race_card(card) -> dict | None:
             "detail_url":   detail_url,
             "official_url": None,
         }
+
     except Exception as e:
         print(f"  [파싱오류] {e}")
         return None
@@ -175,13 +209,10 @@ def crawl() -> list[dict]:
     try:
         resp = requests.get(LIST_URL, headers=HEADERS, timeout=20)
         resp.raise_for_status()
-
         print(f"[응답] 상태코드: {resp.status_code} | 길이: {len(resp.text)}자")
 
-        # 차단 여부 확인
         if "Host not in allowlist" in resp.text or len(resp.text) < 100:
-            print("[차단] marathongo에서 접근이 차단되었습니다.")
-            print(f"[응답내용] {resp.text[:200]}")
+            print("[차단] 접근이 차단되었습니다.")
             return []
 
         soup  = BeautifulSoup(resp.text, "html.parser")
@@ -191,25 +222,20 @@ def crawl() -> list[dict]:
         seen  = set()
         races = []
 
-        for link in links:
-            href = link.get("href", "")
+        for a in links:
+            href = a.get("href", "")
             if href in seen:
                 continue
             seen.add(href)
 
-            container = link.find_parent("div") or link.find_parent("li") or link
-            for _ in range(4):
-                parent = container.find_parent(["div", "li", "article"])
-                if parent and len(parent.get_text()) > len(container.get_text()):
-                    container = parent
-                    break
-
-            race = parse_race_card(container)
+            race = parse_link(a)
             if race:
                 races.append(race)
 
+        # 날짜순 정렬
         races.sort(key=lambda r: r["date"])
 
+        # 중복 제거
         seen_keys = set()
         unique = []
         for r in races:
@@ -232,7 +258,7 @@ def crawl() -> list[dict]:
         return unique
 
     except Exception as e:
-        print(f"[실패] 크롤링 실패: {e}")
+        print(f"[실패] {e}")
         return []
 
 
