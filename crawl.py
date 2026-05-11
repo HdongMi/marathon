@@ -1,6 +1,5 @@
 """
-마라톤 대회 크롤러 - 디버깅 버전
-실제 링크 텍스트 구조 확인용
+마라톤 대회 크롤러 - marathongo.co.kr
 """
 
 import requests
@@ -101,32 +100,26 @@ def parse_status(text: str) -> str:
     return "미정"
 
 
-def parse_link(a_tag, debug=False) -> dict | None:
+def parse_link(a_tag) -> dict | None:
     try:
         href = a_tag.get("href", "")
         if not href.startswith("/raceDetail/domestic/"):
             return None
 
         detail_url = BASE_URL + href
-        raw_text   = a_tag.get_text(" ", strip=True)
 
-        if debug:
-            print(f"\n[DEBUG] href: {href}")
-            print(f"[DEBUG] raw_text 길이: {len(raw_text)}")
-            print(f"[DEBUG] raw_text: {raw_text[:300]}")
+        # ── 핵심: bytes로 직접 디코딩 ──────────────────────────
+        # BeautifulSoup이 이미 올바르게 파싱했다면 .get_text()가 정상이어야 함
+        # 하지만 인코딩 오류 시 raw bytes에서 직접 추출
+        raw_text = a_tag.get_text(" ", strip=True)
 
-        # 텍스트가 중복 반복되는 구조 → 앞 절반만 사용
+        # 텍스트가 중복 반복 구조 → 앞 절반 사용
         half = len(raw_text) // 2
         text = raw_text[:half].strip() if half > 10 else raw_text
-
-        if debug:
-            print(f"[DEBUG] 사용 text: {text[:200]}")
 
         # 날짜 파싱
         date_match = re.search(r"(\d{1,2})월\s*(\d{1,2})일", text)
         if not date_match:
-            if debug:
-                print(f"[DEBUG] 날짜 파싱 실패")
             return None
 
         month = int(date_match.group(1))
@@ -136,33 +129,26 @@ def parse_link(a_tag, debug=False) -> dict | None:
             year += 1
         date_str = f"{year}-{month:02d}-{day:02d}"
 
-        # 요일
-        dow_match = re.search(r"[\(（](월|화|수|목|금|토|일)[\)）]", text)
-        dow = dow_match.group(1) if dow_match else ""
+        dow_match  = re.search(r"[\(（](월|화|수|목|금|토|일)[\)）]", text)
+        dow        = dow_match.group(1) if dow_match else ""
 
-        # 접수기간
-        reg_match = re.search(r"(\d{4}\.\d{2}\.\d{2})\s*~\s*(\d{4}\.\d{2}\.\d{2})", text)
+        reg_match  = re.search(r"(\d{4}\.\d{2}\.\d{2})\s*~\s*(\d{4}\.\d{2}\.\d{2})", text)
         reg_period = f"{reg_match.group(1)} ~ {reg_match.group(2)}" if reg_match else ""
 
-        # 상태
         status = parse_status(text)
 
-        # 장소: | 사이 텍스트
-        pipes = re.findall(r"\|\s*([^|]+?)\s*(?=\|)", text)
+        pipes    = re.findall(r"\|\s*([^|]+?)\s*(?=\|)", text)
         location = pipes[0].strip() if pipes else ""
 
-        # 지역
         region_match = re.search(
             r"(서울|경기|충청|충남|충북|대전|경상|경남|경북|부산|대구|전라|전남|전북|광주|제주|강원|울산|세종|인천)",
             text
         )
         region = region_match.group(1) if region_match else ""
 
-        # 코스: 날짜 앞 텍스트에서 추출
         before_date = text[:date_match.start()].strip()
-        courses = parse_courses(before_date) or parse_courses(text)
+        courses     = parse_courses(before_date) or parse_courses(text)
 
-        # 제목: 날짜+요일 이후 ~ 첫 | 이전
         after_date = text[date_match.end():]
         after_date = re.sub(r"[\(（](월|화|수|목|금|토|일)[\)）]", "", after_date).strip()
         after_date = re.sub(r"(접수중|접수마감|접수전|마감)", "", after_date).strip()
@@ -171,9 +157,6 @@ def parse_link(a_tag, debug=False) -> dict | None:
         title_raw  = re.sub(r"(100km|50km|42km|풀코스|풀|하프|21km|10km|5km|3km|VK|Kids|기부\s*마라톤|울트라)", "", title_raw).strip()
         title_raw  = re.sub(r"\d+[kKkm]+", "", title_raw).strip()
         title      = title_raw.strip()
-
-        if debug:
-            print(f"[DEBUG] 추출결과 → title: '{title}', date: {date_str}, courses: {courses}, status: {status}")
 
         if not title or len(title) < 2:
             return None
@@ -205,21 +188,26 @@ def crawl() -> list[dict]:
     try:
         resp = requests.get(LIST_URL, headers=HEADERS, timeout=20)
         resp.raise_for_status()
-        print(f"[응답] 상태코드: {resp.status_code} | 길이: {len(resp.text)}자")
 
-        if "Host not in allowlist" in resp.text or len(resp.text) < 100:
+        # ── 핵심 수정: 인코딩 강제 지정 ──────────────────────
+        resp.encoding = "utf-8"
+        html = resp.text
+
+        print(f"[응답] 상태코드: {resp.status_code} | 길이: {len(html)}자")
+        print(f"[인코딩] {resp.encoding}")
+
+        # 인코딩 확인 (정상이면 한글이 보여야 함)
+        sample = html[5000:5100] if len(html) > 5100 else html[:100]
+        print(f"[샘플] {sample}")
+
+        if "Host not in allowlist" in html or len(html) < 100:
             print("[차단] 접근이 차단되었습니다.")
             return []
 
-        soup  = BeautifulSoup(resp.text, "html.parser")
+        # ── BeautifulSoup에도 인코딩 명시 ──────────────────────
+        soup  = BeautifulSoup(html, "html.parser", from_encoding="utf-8")
         links = soup.find_all("a", href=re.compile(r"/raceDetail/domestic/"))
         print(f"[링크] raceDetail 링크 수: {len(links)}개")
-
-        # 첫 3개 링크 디버깅
-        print("\n===== 디버깅: 첫 3개 링크 분석 =====")
-        for i, a in enumerate(links[:3]):
-            parse_link(a, debug=True)
-        print("===== 디버깅 완료 =====\n")
 
         seen  = set()
         races = []
@@ -230,7 +218,7 @@ def crawl() -> list[dict]:
                 continue
             seen.add(href)
 
-            race = parse_link(a, debug=False)
+            race = parse_link(a)
             if race:
                 races.append(race)
 
@@ -246,7 +234,7 @@ def crawl() -> list[dict]:
 
         print(f"[완료] {len(unique)}개 대회 수집")
 
-        for i, race in enumerate(unique):
+        for race in unique:
             title = race["title"]
             if title in url_cache:
                 race["official_url"] = url_cache[title]
