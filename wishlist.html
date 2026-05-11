@@ -6,69 +6,185 @@
 <title>런뉴 — 찜한 대회</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  /* index와 동일한 고정 프레임 설정 */
-  .page { height: 100vh; max-height: 100vh; }
-  
-  /* 비어있을 때 스타일 추가 */
-  .empty-state { text-align: center; padding: 80px 20px; color: var(--muted); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-state p { font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
-  .btn-primary { display: inline-block; background: var(--accent); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 14px; }
+  .w-header {
+    padding: 20px 20px 12px;
+    padding-top: calc(20px + env(safe-area-inset-top));
+    flex-shrink: 0;
+  }
+  .w-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px; color: var(--text); letter-spacing: 2px; line-height: 1;
+  }
+  .w-title span { color: var(--accent); }
+  .w-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .w-count-row {
+    padding: 0 16px 8px;
+    font-size: 12px; color: var(--muted); flex-shrink: 0;
+  }
+  .w-count-row strong { color: var(--text); }
+
+  .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  .race-list {
+    padding: 0 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+
+  /* 빈 상태 */
+  .empty-box {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 30px; text-align: center; gap: 14px;
+  }
+  .empty-icon { font-size: 52px; }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .empty-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .empty-btn {
+    margin-top: 4px; padding: 12px 28px; border-radius: 14px;
+    background: var(--accent); border: none;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700;
+    color: #000; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 찜 카드 — 기존 race-card에 삭제 버튼 추가 */
+  .wish-card {
+    display: flex; gap: 12px; padding: 14px;
+    background: var(--surface); border-radius: var(--radius);
+    margin-bottom: 10px; border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+    text-decoration: none; animation: fadeUp .3s ease both;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wish-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--accent);
+    border-radius: 3px 0 0 3px;
+  }
+  .wish-remove {
+    position: absolute; top: 10px; right: 10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
 </style>
 </head>
 <body>
 <div class="page">
-  
-  <div class="sub-header">
-    <button class="sub-back" onclick="history.back()">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <div class="sub-title">찜한 대회</div>
-  </div>
 
-  <div class="count-row">
-    <span class="count-label">총 <strong id="raceCount">0</strong>개 대회</span>
-  </div>
+  <div style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
 
-  <div class="race-list" id="raceList">
-    <div class="state-box">
-      <div class="spinner"></div>
-      <div class="state-text">데이터를 불러오는 중...</div>
+    <div class="w-header">
+      <div class="w-title">MY <span>RACES</span></div>
+      <div class="w-sub">찜해둔 대회 목록이에요</div>
     </div>
+
+    <div class="w-count-row">
+      총 <strong id="wishCount">–</strong>개 대회
+    </div>
+
+    <div class="scroll-area">
+      <div class="race-list" id="wishList">
+        <div class="state-box">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  <nav class="tab-bar">
+    <a class="tab-btn" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+        <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+        <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      대회목록
+    </a>
+    <a class="tab-btn active" href="wishlist.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      찜 목록
+    </a>
+  </nav>
 
 </div>
 
 <script src="app.js"></script>
 <script>
-  (async () => {
-    if (!restoreSession()) {
-      window.location.href = getBasePath() + 'login.html';
+  const MON_KO = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  function ddayHtmlWish(r) {
+    if (r.status === '마감')   return '<div class="dday close">마감</div>';
+    if (r.status === '접수전') return '<div class="dday before">접수전</div>';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff  = Math.ceil((new Date(r.date) - today) / 86400000);
+    if (diff < 0)  return '<div class="dday close">종료</div>';
+    if (diff === 0) return '<div class="dday soon">D-DAY</div>';
+    if (diff <= 7)  return '<div class="dday soon">D-' + diff + '</div>';
+    return '<div class="dday open">접수중</div>';
+  }
+
+  function removeWish(title) {
+    toggleWish(title); // 이미 찜된 상태면 토글로 제거
+    renderWishList();
+  }
+
+  function renderWishList() {
+    const el = document.getElementById('wishList');
+    const countEl = document.getElementById('wishCount');
+
+    loadWishlist();
+    const wished = wishlist; // app.js의 전역 wishlist
+
+    // 전체 races에서 찜한 것만 필터
+    const wishedRaces = allRaces.filter(r => wished.includes(r.title));
+
+    countEl.textContent = wishedRaces.length;
+
+    if (wishedRaces.length === 0) {
+      el.innerHTML = `
+        <div class="empty-box">
+          <div class="empty-icon">🤍</div>
+          <div class="empty-title">찜한 대회가 없어요</div>
+          <div class="empty-desc">대회 상세페이지에서 하트를 눌러<br>관심 대회를 저장해보세요</div>
+          <button class="empty-btn" onclick="location.href='index.html'">대회 둘러보기</button>
+        </div>`;
       return;
     }
 
+    el.innerHTML = wishedRaces.map((r, i) => {
+      const idx = allRaces.indexOf(r);
+      return `
+        <a class="wish-card" href="detail.html?i=${idx}" style="animation-delay:${Math.min(i * 40, 300)}ms">
+          <div class="date-box">
+            <div class="mo">${MON[r.month] || ''}</div>
+            <div class="dy">${r.day}</div>
+            <div class="dw">${r.dow}</div>
+          </div>
+          <div class="card-info">
+            <div class="badges">${(r.courses || []).slice(0, 3).map(badge).join('')}</div>
+            <div class="card-title">${r.title}</div>
+            <div class="card-meta">📍 ${r.region || ''} ${r.location || ''}</div>
+          </div>
+          <div class="card-right">${ddayHtmlWish(r)}</div>
+          <div class="wish-remove" onclick="event.preventDefault(); event.stopPropagation(); removeWish('${r.title.replace(/'/g, "\\'")}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" fill="var(--red)" stroke="var(--red)"/>
+            </svg>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  (async () => {
     await loadRaces();
-
-    const myWishes = allRaces.filter(function(r) {
-      return wishlist.includes(r.title); 
-    });
-    
-    // 개수 업데이트
-    document.getElementById('raceCount').textContent = myWishes.length;
-
-    if (myWishes.length === 0) {
-      document.getElementById('raceList').innerHTML = `
-        <div class="empty-state">
-          <div class="icon">💔</div>
-          <p>아직 찜한 대회가 없어요.<br>마음에 드는 대회를 하트로 찜해보세요!</p>
-          <a href="index.html" class="btn-primary">대회 찾아보기</a>
-        </div>
-      `;
-    } else {
-      if(typeof render === 'function') {
-        render(myWishes);
-      }
-    }
+    renderWishList();
   })();
 </script>
 </body>
