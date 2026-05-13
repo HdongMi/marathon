@@ -6,97 +6,90 @@
 <title>런뉴 — 마감된 대회</title>
 <link rel="stylesheet" href="style.css">
 <style>
-  .tab-content { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-  .scroll-area  { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-  .scroll-area::-webkit-scrollbar { display: none; }
-
-  /* 헤더 */
-  .ended-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 56px 16px 12px;
-    background: var(--bg);
-    border-bottom: 1px solid rgba(255,255,255,.07);
+  /* ── 레이아웃 (wishlist 동일 구조) ── */
+  .w-header {
+    padding: 20px 20px 12px;
+    padding-top: calc(20px + env(safe-area-inset-top));
     flex-shrink: 0;
   }
-  .back-btn {
-    background: none;
-    border: none;
-    color: var(--accent);
-    font-size: 22px;
-    line-height: 1;
-    padding: 4px 8px 4px 0;
-    cursor: pointer;
+  .w-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px; color: var(--text); letter-spacing: 2px; line-height: 1;
   }
-  .ended-header h2 {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    margin: 0;
+  .w-title span { color: var(--accent); }
+  .w-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .w-count-row {
+    padding: 0 16px 8px;
+    font-size: 12px; color: var(--muted); flex-shrink: 0;
   }
-  .ended-badge {
-    margin-left: auto;
-    background: rgba(255,255,255,.08);
-    color: rgba(255,255,255,.45);
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 20px;
+  .w-count-row strong { color: var(--text); }
+
+  .scroll-area { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  .race-list {
+    padding: 0 16px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 
-  /* 공고 카드 — 흐리게 처리 */
-  .ended-card {
-    opacity: 0.5;
-    filter: grayscale(60%);
+  /* ── 마감 카드 스타일 오버레이 ── */
+  .race-card.ended-card {
+    opacity: 0.55;
+    filter: grayscale(45%);
     position: relative;
   }
-  .ended-card::after {
-    content: '접수마감';
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(180,40,40,.85);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 3px 7px;
-    border-radius: 4px;
-    letter-spacing: .5px;
+  /* 기존 카드 우측 dday 영역 대신 마감 뱃지를 겹쳐 표시 */
+  .race-card.ended-card .dday {
+    background: rgba(160,30,30,.9) !important;
+    color: #fff !important;
+  }
+  /* 좌측 액센트 바 — 빨간색으로 */
+  .race-card.ended-card::before {
+    background: rgba(180,40,40,.7) !important;
   }
 
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 60vh;
-    color: rgba(255,255,255,.3);
-    font-size: 14px;
-    gap: 12px;
+  /* ── 빈 상태 ── */
+  .empty-box {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px 30px; text-align: center; gap: 14px;
+  }
+  .empty-icon { font-size: 52px; }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .empty-desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .empty-btn {
+    margin-top: 4px; padding: 12px 28px; border-radius: 14px;
+    background: var(--accent); border: none;
+    font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 700;
+    color: #000; cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
 </style>
 </head>
 <body>
-<div class="page" id="app">
-  <div class="tab-content">
+<div class="page">
 
-    <div class="ended-header">
-      <button class="back-btn" onclick="history.back()">←</button>
-      <h2>마감된 대회</h2>
-      <span class="ended-badge" id="endedCount">0개</span>
+  <div style="display:flex; flex-direction:column; flex:1; overflow:hidden;">
+
+    <div class="w-header">
+      <div class="w-title">CLOSED <span>RACES</span></div>
+      <div class="w-sub">접수가 마감된 대회 목록이에요</div>
+    </div>
+
+    <div class="w-count-row">
+      총 <strong id="endedCount">–</strong>개 대회
     </div>
 
     <div class="scroll-area">
       <div class="race-list" id="endedList">
-        <div class="empty-state">
-          마감된 대회가 없습니다.
+        <div class="state-box">
+          <div class="spinner"></div>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- 탭바 -->
   <nav class="tab-bar">
     <a class="tab-btn" href="index.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -113,7 +106,7 @@
         <line x1="3" y1="10" x2="21" y2="10"/>
         <line x1="9" y1="15" x2="15" y2="15"/>
       </svg>
-      마감공고
+      마감대회
     </a>
     <a class="tab-btn" href="wishlist.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -122,50 +115,45 @@
       찜 목록
     </a>
   </nav>
+
 </div>
 
 <script src="app.js"></script>
 <script>
-  (() => {
-    // index.html 에서 sessionStorage 에 저장해 둔 마감 공고 불러오기
-    const raw = sessionStorage.getItem('endedRaces');
-    const endedRaces = raw ? JSON.parse(raw) : [];
+  (async () => {
+    // loadRaces() 호출 → app.js 전역 endedRaces 채워짐
+    await loadRaces();
 
     const listEl  = document.getElementById('endedList');
     const countEl = document.getElementById('endedCount');
 
-    if (!endedRaces.length) return;
+    if (!endedRaces || !endedRaces.length) {
+      listEl.innerHTML = `
+        <div class="empty-box">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">마감된 대회가 없어요</div>
+          <div class="empty-desc">현재 접수 마감된 대회가 없습니다</div>
+          <button class="empty-btn" onclick="location.href='index.html'">대회 둘러보기</button>
+        </div>`;
+      return;
+    }
 
-    countEl.textContent = `${endedRaces.length}개`;
+    countEl.textContent = endedRaces.length;
 
-    listEl.innerHTML = '';
+    // app.js cardHtml() 재사용
+    // detail.html?i=인덱스&source=ended 로 연결 — detail.html이 endedRaces에서 찾도록
+    listEl.innerHTML = endedRaces.map((r, i) => {
+      // cardHtml이 생성한 href를 source=ended 파라미터 추가로 교체
+      const html = cardHtml(r, i, endedRaces);
+      return html.replace(
+        `href="detail.html?i=${i}"`,
+        `href="detail.html?i=${i}&source=ended"`
+      );
+    }).join('');
 
-    endedRaces.forEach(race => {
-      let cardHtml;
-
-      if (typeof renderRaceCard === 'function') {
-        cardHtml = renderRaceCard(race);
-      } else {
-        cardHtml = `
-          <div class="race-card ended-card">
-            <div class="race-date">${race.date ?? ''}</div>
-            <div class="race-name">${race.name ?? race.title ?? '대회명 없음'}</div>
-            <div class="race-meta">${race.location ?? ''} · ${race.course ?? ''}</div>
-          </div>`;
-      }
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'ended-card-wrapper';
-      wrapper.innerHTML = typeof cardHtml === 'string' ? cardHtml : '';
-
-      if (cardHtml instanceof HTMLElement) {
-        cardHtml.classList.add('ended-card');
-        listEl.appendChild(cardHtml);
-      } else {
-        const card = wrapper.firstElementChild;
-        if (card) card.classList.add('ended-card');
-        listEl.appendChild(wrapper);
-      }
+    // 마감 스타일 적용
+    listEl.querySelectorAll('.race-card').forEach(card => {
+      card.classList.add('ended-card');
     });
   })();
 </script>
