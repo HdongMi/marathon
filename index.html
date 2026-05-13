@@ -16,6 +16,22 @@
   .list-hero-content h1 { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: #fff; line-height: 1; letter-spacing: 2px; }
   .list-hero-content h1 span { color: var(--accent); }
   .hero-sub { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 6px; }
+
+  /* 마감 대회 링크 */
+  .ended-link {
+    display: block;
+    margin: 12px 16px 24px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    color: rgba(255,255,255,.55);
+    font-size: 13px;
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: .3px;
+  }
+  .ended-link:active { background: rgba(255,255,255,.1); }
 </style>
 </head>
 <body>
@@ -89,13 +105,75 @@
 
 <script src="app.js"></script>
 <script>
+  // ── 스크롤 위치 저장 / 복원 ──────────────────────────────
+  const SCROLL_KEY = 'raceListScroll';
+  const scrollArea = document.querySelector('.scroll-area');
+
+  // 페이지 떠날 때 현재 스크롤 위치 저장
+  window.addEventListener('pagehide', () => {
+    sessionStorage.setItem(SCROLL_KEY, scrollArea.scrollTop);
+  });
+  // beforeunload 도 함께 (일부 Android WebView 대응)
+  window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem(SCROLL_KEY, scrollArea.scrollTop);
+  });
+
+  // ── 초기 로드 ─────────────────────────────────────────────
   (async () => {
     const races = await loadRaces();
+
     if (!races || races.length === 0) {
       document.getElementById('raceList').innerHTML =
         '<div class="state-box"><div style="font-size:36px">⚠️</div><div class="state-text">대회 정보가 없습니다.</div></div>';
-    } else {
-      applyFilter();
+      return;
+    }
+
+    // ── 오늘 기준 접수 마감 공고 분리 ────────────────────────
+    // ※ 날짜 필드명이 다르면 'registrationEnd' 를 실제 필드명으로 교체하세요
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const activeRaces = races.filter(r => {
+      if (!r.registrationEnd) return true;          // 날짜 없으면 표시
+      const end = new Date(r.registrationEnd);
+      end.setHours(0, 0, 0, 0);
+      return end >= today;
+    });
+
+    const endedRaces = races.filter(r => {
+      if (!r.registrationEnd) return false;
+      const end = new Date(r.registrationEnd);
+      end.setHours(0, 0, 0, 0);
+      return end < today;
+    });
+
+    // app.js 가 전역 배열(window.raceData 등)을 참조하는 경우 교체
+    // (app.js 내부 변수명에 맞게 수정 필요)
+    if (typeof window.raceData !== 'undefined') {
+      window.raceData = activeRaces;
+    }
+
+    // ended.html 로 넘길 용도로 sessionStorage 에 보관
+    sessionStorage.setItem('endedRaces', JSON.stringify(endedRaces));
+
+    applyFilter();
+
+    // 마감 공고 링크 삽입
+    if (endedRaces.length > 0) {
+      const listEl = document.getElementById('raceList');
+      const endedLink = document.createElement('a');
+      endedLink.href = 'ended.html';
+      endedLink.className = 'ended-link';
+      endedLink.innerHTML = `📂 접수 마감된 대회 ${endedRaces.length}개 보기 →`;
+      listEl.after(endedLink);
+    }
+
+    // ── 스크롤 복원 (렌더 완료 후) ───────────────────────────
+    const saved = sessionStorage.getItem(SCROLL_KEY);
+    if (saved) {
+      requestAnimationFrame(() => {
+        scrollArea.scrollTop = parseInt(saved, 10);
+      });
     }
   })();
 </script>
