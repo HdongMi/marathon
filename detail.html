@@ -134,7 +134,8 @@
     <div class="d-hero">
       <img src="https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800&q=80" alt="" id="heroImg">
       <div class="d-hero-grad"></div>
-      <a class="d-back" href="index.html">
+      <!-- 뒤로가기: source에 따라 동적으로 설정 -->
+      <a class="d-back" id="backBtn" href="index.html">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
           <path d="M15 18l-6-6 6-6"/>
         </svg>
@@ -183,7 +184,6 @@
           <div class="info-val" id="dStatus">–</div>
         </div>
 
-        <!-- 참가비: fees 필드 있을 때만 노출 -->
         <div class="info-box full" id="dFeeBox" style="display:none;">
           <div class="info-lbl">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -193,7 +193,6 @@
         </div>
       </div>
 
-      <!-- 문의: contact 필드 있을 때만 노출 -->
       <div class="d-section" id="dContactSection" style="display:none;">
         <div class="d-sec-title">문의</div>
         <a class="link-row" id="dPhoneRow" href="#" style="display:none;">
@@ -222,11 +221,9 @@
         </a>
       </div>
 
-      <!-- 공식 링크 -->
       <div class="d-section">
         <div class="d-sec-title">공식 링크</div>
 
-        <!-- 공식 홈페이지 (official_url 있을 때만) -->
         <a class="link-row primary" id="dOfficialRow" href="#" target="_blank" rel="noopener" style="display:none;">
           <div class="link-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
@@ -241,7 +238,6 @@
           <div class="link-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></div>
         </a>
 
-        <!-- 네이버 검색 (항상 표시 — 공식 URL 없을 때 대안) -->
         <a class="link-row" id="dNaverRow" href="#" target="_blank" rel="noopener">
           <div class="link-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2">
@@ -281,7 +277,9 @@
 <script src="app.js"></script>
 <script>
   let race = null;
-  const idx = parseInt(new URLSearchParams(location.search).get('i'));
+  const params = new URLSearchParams(location.search);
+  const idx    = parseInt(params.get('i'));
+  const source = params.get('source'); // 'ended' 이면 endedRaces에서 조회
 
   function updateWishIcon(wished) {
     document.getElementById('wishIcon').setAttribute('fill',   wished ? '#ff4d2e' : 'none');
@@ -313,13 +311,21 @@
   }
 
   (async () => {
-    const races = await loadRaces();
-    if (isNaN(idx) || idx < 0 || idx >= races.length) {
+    // 항상 loadRaces() 호출 → allRaces + endedRaces 둘 다 채워짐
+    await loadRaces();
+
+    // source=ended 이면 endedRaces에서, 아니면 allRaces에서 조회
+    const pool = (source === 'ended') ? endedRaces : allRaces;
+
+    // 뒤로가기 버튼 — 마감공고에서 왔으면 ended.html로
+    document.getElementById('backBtn').href = (source === 'ended') ? 'ended.html' : 'index.html';
+
+    if (isNaN(idx) || idx < 0 || idx >= pool.length) {
       document.getElementById('dTitle').textContent = '대회를 찾을 수 없어요';
       return;
     }
 
-    race = races[idx];
+    race = pool[idx];
     const r = race;
 
     document.title = `런뉴 — ${r.title}`;
@@ -361,7 +367,7 @@
       }
     }
 
-    // 공식 홈페이지 (official_url 있으면 강조 표시)
+    // 공식 홈페이지
     const officialRow = document.getElementById('dOfficialRow');
     if (r.official_url) {
       officialRow.style.display = 'flex';
@@ -369,12 +375,12 @@
       document.getElementById('dOfficialUrl').textContent = friendlyDomain(r.official_url);
     }
 
-    // 네이버 검색 (항상 표시)
+    // 네이버 검색
     const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(r.title)}`;
     document.getElementById('dNaverRow').href = naverUrl;
     document.getElementById('dNaverQuery').textContent = r.title;
 
-    // CTA 버튼 — 공식URL 있으면 거기로, 없으면 네이버 검색으로
+    // CTA 버튼
     const targetUrl = r.official_url || naverUrl;
     const cta = document.getElementById('ctaBtn');
     if (r.status === '마감' || r.status === '종료') {
