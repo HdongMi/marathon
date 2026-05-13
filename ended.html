@@ -107,6 +107,15 @@
       </svg>
       대회목록
     </a>
+    <a class="tab-btn active" href="ended.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      마감공고
+    </a>
     <a class="tab-btn" href="wishlist.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -130,18 +139,14 @@
 
     countEl.textContent = `${endedRaces.length}개`;
 
-    // app.js 의 renderRaceCard() 함수가 있으면 재사용,
-    // 없으면 아래 간이 렌더링 사용
     listEl.innerHTML = '';
 
     endedRaces.forEach(race => {
       let cardHtml;
 
       if (typeof renderRaceCard === 'function') {
-        // app.js 에 renderRaceCard(race) 가 있는 경우
         cardHtml = renderRaceCard(race);
       } else {
-        // 없는 경우 — 기본 카드 (필드명은 실제 데이터에 맞게 수정)
         cardHtml = `
           <div class="race-card ended-card">
             <div class="race-date">${race.date ?? ''}</div>
@@ -154,7 +159,6 @@
       wrapper.className = 'ended-card-wrapper';
       wrapper.innerHTML = typeof cardHtml === 'string' ? cardHtml : '';
 
-      // 카드 자체가 DOM 노드로 반환되는 경우 처리
       if (cardHtml instanceof HTMLElement) {
         cardHtml.classList.add('ended-card');
         listEl.appendChild(cardHtml);
