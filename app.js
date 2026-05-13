@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════
-   app.js  —  런뉴 공통 JS 로직 (로그인 제거)
+   app.js  —  런뉴 공통 JS 로직
    ═══════════════════════════════════════ */
 
 const MON = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
 /* ── 전역 상태 ── */
-let allRaces = [];
-let wishlist = [];
+let allRaces   = [];   // 현재 접수중·예정 대회만
+let endedRaces = [];   // 접수 마감 또는 날짜 지난 대회
+let wishlist   = [];
 
 /* ════════════════════════════════
    찜 — 로컬스토리지 (로그인 없이 guest로 저장)
@@ -37,11 +38,30 @@ async function loadRaces() {
     const res  = await fetch('races.json?t=' + Date.now());
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    allRaces = (data.races || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sorted = (data.races || []).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // 마감 판단: status가 '마감' 이거나 대회 날짜가 오늘 이전
+    endedRaces = sorted.filter(r => {
+      if (r.status === '마감') return true;
+      const raceDate = new Date(r.date);
+      raceDate.setHours(0, 0, 0, 0);
+      return raceDate < today;
+    });
+
+    allRaces = sorted.filter(r => !endedRaces.includes(r));
+
+    // ended.html에서 쓸 수 있도록 sessionStorage에 보관
+    sessionStorage.setItem('endedRaces', JSON.stringify(endedRaces));
+
     const banner = document.getElementById('updateTime');
     if (banner) banner.textContent = data.updated_at
       ? '마지막 업데이트: ' + data.updated_at + ' · 매주 월요일 자동 갱신'
       : '데이터 로드 완료';
+
     return allRaces;
   } catch (e) {
     console.error('races.json 로드 실패:', e);
@@ -50,7 +70,7 @@ async function loadRaces() {
 }
 
 /* ════════════════════════════════
-   필터
+   필터 (allRaces — 마감 제외된 목록 기준)
 ════════════════════════════════ */
 let openOnly = false;
 
@@ -102,14 +122,16 @@ function ddayHtml(r) {
   if (r.status === '접수전') return '<div class="dday before">접수전</div>';
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const diff  = Math.ceil((new Date(r.date) - today) / 86400000);
-  if (diff < 0)   return '<div class="dday close">종료</div>';
-  if (diff === 0)  return '<div class="dday soon">D-DAY</div>';
-  if (diff <= 7)   return '<div class="dday soon">D-' + diff + '</div>';
+  if (diff < 0)  return '<div class="dday close">종료</div>';
+  if (diff === 0) return '<div class="dday soon">D-DAY</div>';
+  if (diff <= 7)  return '<div class="dday soon">D-' + diff + '</div>';
   return '<div class="dday open">접수중</div>';
 }
 
-function cardHtml(r, i) {
-  const idx = allRaces.indexOf(r);
+function cardHtml(r, i, sourceArr) {
+  // sourceArr: 카드 클릭 시 detail.html?i= 에 쓸 인덱스 기준 배열
+  const arr = sourceArr || allRaces;
+  const idx = arr.indexOf(r);
   return `<a class="race-card" href="detail.html?i=${idx}" style="animation-delay:${Math.min(i * 40, 300)}ms">
     <div class="date-box">
       <div class="mo">${MON[r.month] || ''}</div>
@@ -125,7 +147,7 @@ function cardHtml(r, i) {
   </a>`;
 }
 
-function render(list) {
+function render(list, sourceArr) {
   const cnt = document.getElementById('raceCount');
   if (cnt) cnt.textContent = list.length;
   const el = document.getElementById('raceList');
@@ -134,7 +156,7 @@ function render(list) {
     el.innerHTML = '<div class="state-box"><div style="font-size:36px">🏅</div><div class="state-text" style="margin-top:8px">해당 조건의 대회가 없어요</div></div>';
     return;
   }
-  el.innerHTML = list.map((r, i) => cardHtml(r, i)).join('');
+  el.innerHTML = list.map((r, i) => cardHtml(r, i, sourceArr)).join('');
 }
 
 /* ════════════════════════════════
