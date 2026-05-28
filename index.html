@@ -33,6 +33,15 @@
   }
   .ended-link:active { background: rgba(255,255,255,.1); }
 </style>
+  
+  <script>
+  // 404.html에서 리다이렉트된 경로 복원
+  var p = new URLSearchParams(window.location.search).get('p');
+  if (p) {
+    window.history.replaceState(null, '', p);
+  }
+</script>
+  
 </head>
 <body>
 <div class="page" id="app">
