@@ -3,10 +3,12 @@
 <head>
   <meta charset="utf-8">
   <script>
-    // 현재 경로를 쿼리스트링으로 변환해서 index.html로 리다이렉트
+    // 서브경로(/marathon/) 포함해서 리다이렉트
     var path = window.location.pathname;
+    var repoName = '/marathon'; // ← 저장소 이름
+    var cleanPath = path.replace(repoName, '') || '/';
     window.location.replace(
-      window.location.origin + '/?p=' + encodeURIComponent(path)
+      window.location.origin + repoName + '/?p=' + encodeURIComponent(cleanPath)
     );
   </script>
 </head>
